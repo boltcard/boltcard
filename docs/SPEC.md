@@ -31,3 +31,5 @@ your bolt card service should verify the payment request as below and continue t
   - allowed merchant list
   - verification of your location from your phone
 - the bolt card service can then make payment from a connected lightning node
+
+[See the bolt card system](SYSTEM.md)
