@@ -11,24 +11,22 @@ The bolt card system is built on the open standards listed below.
 ```
 lnurlw://card.yourdomain.com?p=A2EF40F6D46F1BB36E6EBF0114D4A464&c=F509EEA788E37E32
 ```
-- the POS will call your server here
+- the POS will call your bolt card service here
 ```
 https://card.yourdomain.com?p=A2EF40F6D46F1BB36E6EBF0114D4A464&c=F509EEA788E37E32
 ```
-- your server should verify the payment request and issue an LNURLw response
+- your bolt card service should verify the payment request and continue the LNURLw protocol
 
 ### Server side verification 
-- for the `p` value and the `SDM Meta Read Access Key` value, decrypt the UID and counter
+- for the `p` value and the `SDM Meta Read Access Key` value, decrypt the UID and counter with AES
 - for the `c` value and the `SDM File Read Access Key` value, check with AES-CMAC
 
-![decrypt and cmac steps](images/ac.webp)
-
-- the authenticated UID and counter values can be used on your server to verify the request
-- your server should only accept an increasing counter value
-- additional validation rules can be added at your server, for example
-  - an enable flag
-  - payment limits
-  - a list of allowed merchants
-  - a verification of your location from your phone
-- your server can then make payment from your lightning node
-
+- the authenticated UID and counter is used on the bolt card service to verify that the request is valid
+- the bolt card service must only accept an increasing counter value
+- additional validation rules can be added at the bolt card service, for example
+  - card enable flag
+  - card payment limit per transaction
+  - card payment limit per day
+  - allowed merchant list
+  - verification of your location from your phone
+- the bolt card service can then make payment from a connected lightning node
