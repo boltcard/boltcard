@@ -7,15 +7,15 @@ The bolt card system is built on the open standards listed below.
 
 ## Bolt card and POS interaction
 
-- the point-of-sale (POS) will read an NDEF message from the card, for example
+the point-of-sale (POS) will read an NDEF message from the card, for example
 ```
 lnurlw://card.yourdomain.com?p=A2EF40F6D46F1BB36E6EBF0114D4A464&c=F509EEA788E37E32
 ```
-- the POS will call your bolt card service here
+the POS will then call your bolt card service here
 ```
 https://card.yourdomain.com?p=A2EF40F6D46F1BB36E6EBF0114D4A464&c=F509EEA788E37E32
 ```
-- your bolt card service should verify the payment request and continue the LNURLw protocol
+your bolt card service should verify the payment request as below and continue the LNURLw protocol
 
 ## Server side verification
 
