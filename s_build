@@ -1,0 +1,5 @@
+go build
+sudo systemctl daemon-reload
+sudo systemctl stop boltcard
+sudo systemctl start boltcard
+

@@ -1,0 +1,6 @@
+# to close any database connections
+sudo systemctl stop postgresql
+sudo systemctl start postgresql
+
+psql postgres -f create_db.sql
+psql postgres -f add_card_data.sql

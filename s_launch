@@ -1,0 +1,4 @@
+export PATH=$PATH:/usr/local/go/bin
+
+cd /home/ubuntu/boltcard
+./boltcard

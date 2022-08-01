@@ -1,0 +1,50 @@
+[Unit]
+Description=bolt card service
+After=network.target network-online.target
+Requires=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=10
+User=ubuntu
+
+# boltcard service settings
+
+# LOG_LEVEL is DEBUG or PRODUCTION
+Environment="LOG_LEVEL=DEBUG"
+
+# AES_DECRYPT_KEY is the hex value of the server decrypt key for hosted bolt cards
+Environment="AES_DECRYPT_KEY=00000000000000000000000000000000"
+
+# DB_ values are for the postgres database connection
+Environment="DB_HOST=localhost"
+Environment="DB_PORT=5432"
+Environment="DB_USER=cardapp"
+Environment="DB_PASSWORD=database_password"
+Environment="DB_NAME=card_db"
+
+# LNURLW_CB_URL is the URL prefix for the lnurlw callback
+Environment="LNURLW_CB_URL=https://card.yourdomain.com/cb"
+
+# MIN_WITHDRAW_SATS & MAX_WITHDRAW_SATS set the values for the lnurlw response
+Environment="MIN_WITHDRAW_SATS=1"
+Environment="MAX_WITHDRAW_SATS=1000000"
+
+# LN_ values are for the lightning server used for making payments
+Environment="LN_HOST=ln.host.io"
+Environment="LN_PORT=10009"
+Environment="LN_TLS_FILE=/home/ubuntu/boltcard/tls.cert"
+Environment="LN_MACAROON_FILE=/home/ubuntu/boltcard/SendPaymentV2.macaroon"
+
+# FEE_LIMIT_SAT is the maximum lightning network fee to be paid
+Environment="FEE_LIMIT_SAT=10"
+
+# LN_TESTNODE may be used in testing and will then only pay to the defined test node pubkey
+#Environment="LN_TESTNODE=000000000000000000000000000000000000000000000000000000000000000000"
+
+ExecStart=/bin/bash /home/ubuntu/boltcard/s_launch
+
+[Install]
+WantedBy=multi-user.target
