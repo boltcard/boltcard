@@ -72,7 +72,7 @@ this should respond with 'bad request' and show up in the service log
 navigate to the service URL from a browser, for example `https://card.yourdomain.com/ln?2`  
 this should respond with 'bad request' and show up in the service log  
 #### bolt card
-[create a bolt card](docs/CARD.md) with the URI pointing to this server  
+[create a bolt card](CARD.md) with the URI pointing to this server  
 use a PoS setup to read the bolt card, e.g. [Breez wallet](https://breez.technology/)   
 monitor the service log to ensure decryption, authentication, payment rules and lightning payment work as expected  
 
