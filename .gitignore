@@ -18,6 +18,6 @@ lnurlw
 # secrets
 tls.cert
 *.macaroon*
-
-# test data
-# add_test_data.sql
+add_test_data.sql
+Caddyfile
+boltcard.service
