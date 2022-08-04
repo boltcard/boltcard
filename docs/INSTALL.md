@@ -78,5 +78,5 @@ monitor the service log to ensure decryption, authentication, payment rules and 
 
 # Further information and support
 
-[bolt card FAQ](docs/FAQ.md)  
+[bolt card FAQ](FAQ.md)  
 [bolt card telegram group](https://t.me/bolt_card)
