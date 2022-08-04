@@ -179,7 +179,8 @@ func lnurlw_response(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	lnurlw_cb_url := os.Getenv("LNURLW_CB_URL")
+	host_domain := os.Getenv("HOST_DOMAIN")
+	lnurlw_cb_url := "https://" + host_domain + "/cb"
 
 	min_withdraw_sats_str := os.Getenv("MIN_WITHDRAW_SATS")
 	min_withdraw_sats, err := strconv.Atoi(min_withdraw_sats_str)

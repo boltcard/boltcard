@@ -4,7 +4,8 @@
 *.dll
 *.so
 *.dylib
-lnurlw
+boltcard
+createboltcard/createboltcard
 
 # Test binary, built with `go test -c`
 *.test

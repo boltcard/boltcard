@@ -25,8 +25,8 @@ Environment="DB_USER=cardapp"
 Environment="DB_PASSWORD=database_password"
 Environment="DB_NAME=card_db"
 
-# LNURLW_CB_URL is the URL prefix for the lnurlw callback
-Environment="LNURLW_CB_URL=https://card.yourdomain.com/cb"
+# BASE_URL is the URL base prefix for the lnurlw calls
+Environment="HOST_DOMAIN=card.whitewolftech.com"
 
 # MIN_WITHDRAW_SATS & MAX_WITHDRAW_SATS set the values for the lnurlw response
 Environment="MIN_WITHDRAW_SATS=1"

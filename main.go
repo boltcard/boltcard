@@ -19,6 +19,7 @@ func main() {
 
 	mux := http.NewServeMux()
 
+	mux.HandleFunc("/new", new_card_request)
 	mux.HandleFunc("/ln", lnurlw_response)
 	mux.HandleFunc("/cb", lnurlw_callback)
 

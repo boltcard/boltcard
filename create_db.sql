@@ -7,6 +7,7 @@ CREATE DATABASE card_db;
 
 CREATE TABLE cards (
 	card_id INT GENERATED ALWAYS AS IDENTITY,
+	lock_key CHAR(32) NOT NULL,
 	aes_cmac CHAR(32) NOT NULL,
 	uid CHAR(14) NOT NULL,
 	last_counter_value INTEGER NOT NULL,
@@ -15,6 +16,9 @@ CREATE TABLE cards (
 	tx_limit_sats INT NOT NULL,
 	day_limit_sats INT NOT NULL,
 	card_description VARCHAR(100) NOT NULL DEFAULT '',
+	one_time_code CHAR(32) NOT NULL DEFAULT '',
+	one_time_code_expiry TIMESTAMPTZ DEFAULT NOW() + INTERVAL '1 DAY',
+	one_time_code_used CHAR(1) NOT NULL DEFAULT 'Y',
 	PRIMARY KEY(card_id)
 );
 

@@ -19,6 +19,8 @@ type card struct {
 	enable_flag                string
 	tx_limit_sats              int
 	day_limit_sats             int
+	one_time_code	string
+	lock_key	string
 }
 
 type payment struct {
@@ -45,6 +47,35 @@ func db_open() (*sql.DB, error) {
 	}
 
 	return db, nil
+}
+
+func db_get_new_card(one_time_code string) (*card, error) {
+	c := card{}
+
+	db, err := db_open()
+	if err != nil {
+		return &c, err
+	}
+	defer db.Close()
+
+	sqlStatement := `SELECT lock_key, aes_cmac` +
+		` FROM cards WHERE one_time_code=$1 AND` +
+		` one_time_code_expiry > NOW() AND one_time_code_used = 'N';`
+	row := db.QueryRow(sqlStatement, one_time_code)
+	err = row.Scan(
+		&c.lock_key,
+		&c.aes_cmac)
+	if err != nil {
+		return &c, err
+	}
+
+	sqlStatement = `UPDATE cards SET one_time_code_used = 'Y' WHERE one_time_code = $1;`
+	_, err = db.Exec(sqlStatement, one_time_code)
+	if err != nil {
+		return &c, err
+	}
+
+	return &c, nil
 }
 
 func db_get_card_from_uid(card_uid string) (*card, error) {
