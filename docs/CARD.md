@@ -39,7 +39,7 @@ Here we describe how to create your own bolt card.
 - set `Protocol` to `https://`
 - set `URI Data` to
 ```
-lnurlw://card.yourdomain.com
+lnurlw://card.yourdomain.com/ln
 ```
 - select `Add PICCDATA` and `Enable SUN Message`
 - adjust the `URI Data` to
