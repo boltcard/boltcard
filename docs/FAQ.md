@@ -5,6 +5,11 @@
 The LNURLw that comes from the bolt card is not bech32 encoded.
 It uses [LUD-17](https://github.com/fiatjaf/lnurl-rfc/blob/luds/17.md).
 
+> How do I generate a random key value ?
+
+This will give you a new 128 bit random key as a 32 character hex value.  
+`$ hexdump -vn16 -e'4/4 "%08x" 1 "\n"' /dev/random`
+
 > Why do I get a payment failure with NO_ROUTE ?  
 
 This is due to your payment lightning node not finding a route to the merchant lightning node.  
