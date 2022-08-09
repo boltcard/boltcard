@@ -44,9 +44,9 @@ edit `Caddyfile` to set the boltcard domain name
 edit `add_card_data.sql` to set up the individual bolt card records
 
 ### database creation
-edit `create_db.sql` to set the cardapp password
-`$ sudo -u postgres -i`
-`$ ./s_create_db`
+edit `create_db.sql` to set the cardapp password  
+`$ sudo -u postgres -i`  
+`$ ./s_create_db`  
 
 ### boltcard service install
 `$ sudo cp boltcard.service /etc/systemd/system/boltcard.service`  
