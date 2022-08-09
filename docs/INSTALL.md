@@ -27,6 +27,7 @@ Ubuntu 20.04 LTS server
 ### get a macaroon and tls.cert from the lightning node
 
 create a macaroon with limited permissions to the lightning node  
+[lncli download & install](https://github.com/lightningnetwork/lnd/blob/master/docs/INSTALL.md)
 ```
 $ lncli \                                                    
 --rpcserver=lightning-node.io:10009 \
