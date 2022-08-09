@@ -1,5 +1,10 @@
 # FAQ
 
+> How do you bech32 encode a string on the card ?
+
+The LNURLw that comes from the bolt card is not bech32 encoded.
+It uses [LUD-17](https://github.com/fiatjaf/lnurl-rfc/blob/luds/17.md).
+
 > Why do I get a payment failure with NO_ROUTE ?  
 
 This is due to your payment lightning node not finding a route to the merchant lightning node.  
