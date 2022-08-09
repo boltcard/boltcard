@@ -1,7 +1,7 @@
 DROP DATABASE IF EXISTS card_db;
 CREATE DATABASE card_db;
 
---CREATE USER cardapp WITH PASSWORD '***';
+CREATE USER cardapp WITH PASSWORD 'database_password';
 
 \c card_db;
 
