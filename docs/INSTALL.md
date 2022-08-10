@@ -45,7 +45,7 @@ edit `add_card_data.sql` to set up the individual bolt card records
 
 ### database creation
 edit `create_db.sql` to set the cardapp password  
-`$ sudo -u postgres -i`  
+`$ sudo -u postgres createuser -s ubuntu`  
 `$ ./s_create_db`  
 
 ### boltcard service install
