@@ -1,8 +1,8 @@
-# Steps for making a bolt card
+# Steps for making a bolt card with NXP TagXplorer software
 
 ## Introduction
 
-Here we describe how to create your own bolt card.
+Here we describe how to create your own bolt card with NXP TagXplorer software.
 
 ## Resources
  
