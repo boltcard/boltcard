@@ -5,6 +5,10 @@
 1 GHz processor, 2 GB RAM, 10GB storage minimum  
 Ubuntu 20.04 LTS server
 
+### login
+
+create and use a user named `ubuntu`
+
 ### install Go
 
 [Go download & install](https://go.dev/doc/install)  
