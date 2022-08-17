@@ -8,7 +8,7 @@ Here we describe how to create your own bolt cards with the Bolt Card Android ap
  
 - some `NXP DNA 424 NTAG` cards
 - an Android device with NFC
-- a Bolt Card serice
+- a Bolt Card service
 - [the Bolt Card app](https://github.com/boltcard/bolt-nfc-android-app)
 - [the Bolt Card app usage document](https://github.com/boltcard/bolt-nfc-android-app#usage)
 
@@ -52,7 +52,7 @@ on the bolt card server
 - `card_db=# select card_id, one_time_code from cards order by card_id desc limit 1;`
 - check that this is the correct record (one_time_code matches from before)
 - `card_db=# update cards set uid = 'UID value from before without the 0x prefix' where card_id=card_id from before;`
-- `card_db=# update cards set enabled = 'Y' where card_id=card_id from before;`
+- `card_db=# update cards set enable_flag = 'Y' where card_id=card_id from before;`
 
 ### Make a payment
 - monitor the bolt card service logs
