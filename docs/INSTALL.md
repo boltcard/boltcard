@@ -55,7 +55,7 @@ edit `create_db.sql` to set the cardapp password
 ### boltcard service install
 `$ sudo cp boltcard.service /etc/systemd/system/boltcard.service`  
 `$ ./s_build`  
-`$ sudo systemctl enable boltcard`
+`$ sudo systemctl enable boltcard`  
 `$ sudo systemctl status boltcard`
 
 ### https setup
