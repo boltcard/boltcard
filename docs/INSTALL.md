@@ -83,6 +83,11 @@ this should respond with 'bad request' and show up in the service log
 [create a bolt card](CARD.md) with the URI pointing to this server  
 use a PoS setup to read the bolt card, e.g. [Breez wallet](https://breez.technology/)   
 monitor the service log to ensure decryption, authentication, payment rules and lightning payment work as expected  
+#### production use
+ensure that LOG_LEVEL is set to PRODUCTION  
+ensure that all secrets are minimally available  
+ensure that you have good operational security practices  
+monitor the system for unusual activity  
 
 # Further information and support
 
