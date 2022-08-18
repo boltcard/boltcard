@@ -8,7 +8,7 @@ Here we describe how to create your own bolt cards with the Bolt Card Android ap
  
 - some `NXP DNA 424 NTAG` cards
 - an Android device with NFC
-- a Bolt Card serice
+- a Bolt Card service
 - [the Bolt Card app](https://github.com/boltcard/bolt-nfc-android-app)
 - [the Bolt Card app usage document](https://github.com/boltcard/bolt-nfc-android-app#usage)
 
