@@ -52,7 +52,7 @@ on the bolt card server
 - `card_db=# select card_id, one_time_code from cards order by card_id desc limit 1;`
 - check that this is the correct record (one_time_code matches from before)
 - `card_db=# update cards set uid = 'UID value from before without the 0x prefix' where card_id=card_id from before;`
-- `card_db=# update cards set enabled = 'Y' where card_id=card_id from before;`
+- `card_db=# update cards set enable_flag = 'Y' where card_id=card_id from before;`
 
 ### Make a payment
 - monitor the bolt card service logs
