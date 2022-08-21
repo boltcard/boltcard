@@ -35,6 +35,7 @@ lnurlw://card.yourdomain.com/ln?c=...&p=...
 
 ### Write the key values to the card
 on the bolt card server
+- ensure the environment variables for the database connection are set up (see `boltcard.service`)    
 - enter the `createboltcard` directory
 - `$ go build`
 - `./createboltcard`
