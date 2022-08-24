@@ -8,25 +8,28 @@ import (
 	"os"
 )
 
-type card struct {
+type Card struct {
 	card_id                    int
 	card_guid                  string
-	aes_dec                    string
-	aes_cmac                   string
+	k0_auth_key                string
+	k1_decrypt_key             string
+	k2_cmac_key                string
+	k3                         string
+	k4                         string
 	db_uid                     string
 	last_counter_value         uint32
 	lnurlw_request_timeout_sec int
 	enable_flag                string
 	tx_limit_sats              int
 	day_limit_sats             int
-	one_time_code	string
-	lock_key	string
+	one_time_code              string
+	card_name                  string
 }
 
 type payment struct {
 	card_payment_id int
 	card_id         int
-	k1              string
+	lnurlw_k1       string
 	paid_flag       string
 }
 
@@ -49,8 +52,9 @@ func db_open() (*sql.DB, error) {
 	return db, nil
 }
 
-func db_get_new_card(one_time_code string) (*card, error) {
-	c := card{}
+func db_get_new_card(one_time_code string) (*Card, error) {
+
+	c := Card{}
 
 	db, err := db_open()
 	if err != nil {
@@ -58,13 +62,16 @@ func db_get_new_card(one_time_code string) (*card, error) {
 	}
 	defer db.Close()
 
-	sqlStatement := `SELECT lock_key, aes_cmac` +
+	sqlStatement := `SELECT k0_auth_key, k2_cmac_key, k3, k4, card_name` +
 		` FROM cards WHERE one_time_code=$1 AND` +
 		` one_time_code_expiry > NOW() AND one_time_code_used = 'N';`
 	row := db.QueryRow(sqlStatement, one_time_code)
 	err = row.Scan(
-		&c.lock_key,
-		&c.aes_cmac)
+		&c.k0_auth_key,
+		&c.k2_cmac_key,
+		&c.k3,
+		&c.k4,
+		&c.card_name)
 	if err != nil {
 		return &c, err
 	}
@@ -78,9 +85,101 @@ func db_get_new_card(one_time_code string) (*card, error) {
 	return &c, nil
 }
 
-func db_get_card_from_uid(card_uid string) (*card, error) {
+func db_get_card_count_for_uid(uid string) (int, error) {
 
-	c := card{}
+	card_count := 0
+
+	db, err := db_open()
+	if err != nil {
+		return 0, err
+	}
+	defer db.Close()
+
+	sqlStatement := `select count(card_id) from cards where uid=$1;`
+
+	row := db.QueryRow(sqlStatement, uid)
+	err = row.Scan(&card_count)
+	if err != nil {
+		return 0, err
+	}
+
+	return card_count, nil
+}
+
+func db_get_cards_blank_uid() ([]Card, error) {
+
+	// open the database
+
+	db, err := db_open()
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	// query the database
+
+	sqlStatement := `select card_id, k2_cmac_key from cards where uid='' and last_counter_value=0;`
+
+	rows, err := db.Query(sqlStatement)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	// prepare the results
+
+	var cards []Card
+
+	// Loop through rows, using Scan to assign column data to struct fields.
+	for rows.Next() {
+		var card Card
+		err := rows.Scan(&card.card_id, &card.k2_cmac_key)
+
+		if err != nil {
+			return cards, err
+		}
+		cards = append(cards, card)
+	}
+
+	err = rows.Err()
+
+	if err != nil {
+		return cards, err
+	}
+
+	return cards, nil
+}
+
+func db_update_card_uid_ctr(card_id int, uid string, ctr uint32) error {
+	db, err := db_open()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	sqlStatement := `UPDATE cards SET uid = $2, last_counter_value = $3 WHERE card_id = $1;`
+	res, err := db.Exec(sqlStatement, card_id, uid, ctr)
+	if err != nil {
+		return err
+	}
+	count, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if count != 1 {
+		return nil
+	}
+
+	return nil
+}
+
+func db_get_card_from_uid(card_uid string) (*Card, error) {
+
+	c := Card{}
 
 	db, err := db_open()
 	if err != nil {
@@ -88,14 +187,14 @@ func db_get_card_from_uid(card_uid string) (*card, error) {
 	}
 	defer db.Close()
 
-	sqlStatement := `SELECT card_id, aes_cmac, uid,` +
+	sqlStatement := `SELECT card_id, k2_cmac_key, uid,` +
 		` last_counter_value, lnurlw_request_timeout_sec,` +
 		` enable_flag, tx_limit_sats, day_limit_sats` +
 		` FROM cards WHERE uid=$1;`
 	row := db.QueryRow(sqlStatement, card_uid)
 	err = row.Scan(
 		&c.card_id,
-		&c.aes_cmac,
+		&c.k2_cmac_key,
 		&c.db_uid,
 		&c.last_counter_value,
 		&c.lnurlw_request_timeout_sec,
@@ -109,9 +208,9 @@ func db_get_card_from_uid(card_uid string) (*card, error) {
 	return &c, nil
 }
 
-func db_get_card_from_card_id(card_id int) (*card, error) {
+func db_get_card_from_card_id(card_id int) (*Card, error) {
 
-	c := card{}
+	c := Card{}
 
 	db, err := db_open()
 	if err != nil {
@@ -119,14 +218,14 @@ func db_get_card_from_card_id(card_id int) (*card, error) {
 	}
 	defer db.Close()
 
-	sqlStatement := `SELECT card_id, aes_cmac, uid,` +
+	sqlStatement := `SELECT card_id, k2_cmac_key, uid,` +
 		` last_counter_value, lnurlw_request_timeout_sec,` +
 		` enable_flag, tx_limit_sats, day_limit_sats` +
 		` FROM cards WHERE card_id=$1;`
 	row := db.QueryRow(sqlStatement, card_id)
 	err = row.Scan(
 		&c.card_id,
-		&c.aes_cmac,
+		&c.k2_cmac_key,
 		&c.db_uid,
 		&c.last_counter_value,
 		&c.lnurlw_request_timeout_sec,
@@ -187,7 +286,7 @@ func db_check_and_update_counter(card_id int, new_counter_value uint32) (bool, e
 	return true, nil
 }
 
-func db_insert_payment(card_id int, k1 string) error {
+func db_insert_payment(card_id int, lnurlw_k1 string) error {
 
 	db, err := db_open()
 	if err != nil {
@@ -195,12 +294,12 @@ func db_insert_payment(card_id int, k1 string) error {
 	}
 	defer db.Close()
 
-	// insert a new record into card_payments with card_id & k1 set
+	// insert a new record into card_payments with card_id & lnurlw_k1 set
 
 	sqlStatement := `INSERT INTO card_payments` +
-		` (card_id, k1, paid_flag, lnurlw_request_time)` +
+		` (card_id, lnurlw_k1, paid_flag, lnurlw_request_time)` +
 		` VALUES ($1, $2, 'N', NOW());`
-	res, err := db.Exec(sqlStatement, card_id, k1)
+	res, err := db.Exec(sqlStatement, card_id, lnurlw_k1)
 	if err != nil {
 		return err
 	}
@@ -215,7 +314,7 @@ func db_insert_payment(card_id int, k1 string) error {
 	return nil
 }
 
-func db_get_payment_k1(k1 string) (*payment, error) {
+func db_get_payment_k1(lnurlw_k1 string) (*payment, error) {
 	p := payment{}
 
 	db, err := db_open()
@@ -225,8 +324,8 @@ func db_get_payment_k1(k1 string) (*payment, error) {
 	defer db.Close()
 
 	sqlStatement := `SELECT card_payment_id, card_id, paid_flag` +
-		` FROM card_payments WHERE k1=$1;`
-	row := db.QueryRow(sqlStatement, k1)
+		` FROM card_payments WHERE lnurlw_k1=$1;`
+	row := db.QueryRow(sqlStatement, lnurlw_k1)
 	err = row.Scan(
 		&p.card_payment_id,
 		&p.card_id,

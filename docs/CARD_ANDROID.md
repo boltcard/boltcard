@@ -37,8 +37,10 @@ lnurlw://card.yourdomain.com/ln?c=...&p=...
 on the bolt card server
 - enter the `createboltcard` directory
 - `$ go build`
-- `./createboltcard`
-- this will give you a one use link in text and QR code form
+- `./createboltcard` to create a card
+- `./createboltcard -help` to see options
+- `./createboltcard -enable -tx_max=1000 -day_max=10000 -name=card_1` for example
+- this will give you a one-time link in text and QR code form
 
 on the app
 - select `Key Management`
