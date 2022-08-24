@@ -16,6 +16,7 @@ import (
  *
  * @apiSuccess {String} protocol_name name of the protocol message
  * @apiSuccess {Int} protocol_version version of the protocol message
+ * @apiSuccess {String} card_name user friendly card name
  * @apiSuccess {String} lnurlw_base base for creating the lnurlw on the card
  * @apiSuccess {String} k0 Key 0 - authorisation key
  * @apiSuccess {String} k1 Key 1 - decryption key
