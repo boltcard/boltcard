@@ -246,12 +246,7 @@ func lnurlw_response(w http.ResponseWriter, req *http.Request) {
 
 	if err != nil {
 		log.Debug(err.Error())
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		jsonData := []byte(`{"status":"ERROR","reason":"bad request"}`)
-		w.Write(jsonData)
-
+		write_error(w)
 		return
 	}
 
@@ -259,6 +254,7 @@ func lnurlw_response(w http.ResponseWriter, req *http.Request) {
 
 	if err != nil {
 		log.Warn(err.Error())
+		write_error(w)
 		return
 	}
 
@@ -268,6 +264,7 @@ func lnurlw_response(w http.ResponseWriter, req *http.Request) {
 
 	if err != nil {
 		log.Warn(err.Error())
+		write_error(w)
 		return
 	}
 
@@ -279,6 +276,7 @@ func lnurlw_response(w http.ResponseWriter, req *http.Request) {
 
 	if err != nil {
 		log.Warn(err.Error())
+		write_error(w)
 		return
 	}
 
@@ -287,6 +285,7 @@ func lnurlw_response(w http.ResponseWriter, req *http.Request) {
 
 	if err != nil {
 		log.Warn(err.Error())
+		write_error(w)
 		return
 	}
 
@@ -302,6 +301,7 @@ func lnurlw_response(w http.ResponseWriter, req *http.Request) {
 
 	if err != nil {
 		log.Warn(err)
+		write_error(w)
 		return
 	}
 

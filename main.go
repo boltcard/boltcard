@@ -6,6 +6,13 @@ import (
 	"os"
 )
 
+func write_error(w http.ResponseWriter) {
+        w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(http.StatusOK)
+        jsonData := []byte(`{"status":"ERROR","reason":"bad request"}`)
+        w.Write(jsonData)
+}
+
 func main() {
 	log_level := os.Getenv("LOG_LEVEL")
 

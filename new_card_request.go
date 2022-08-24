@@ -45,6 +45,7 @@ func new_card_request(w http.ResponseWriter, req *http.Request) {
 	params_a, ok := req.URL.Query()["a"]
 	if !ok || len(params_a[0]) < 1 {
 		log.Debug("a not found")
+		write_error(w)
 		return
 	}
 
@@ -56,6 +57,7 @@ func new_card_request(w http.ResponseWriter, req *http.Request) {
 	c, err := db_get_new_card(a)
 	if err != nil {
 		log.Warn(err)
+		write_error(w)
 		return
 	}
 
@@ -78,6 +80,7 @@ func new_card_request(w http.ResponseWriter, req *http.Request) {
 	jsonData, err := json.Marshal(response)
 	if err != nil {
 		log.Warn(err)
+		write_error(w)
 		return
 	}
 
