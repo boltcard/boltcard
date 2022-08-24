@@ -5,6 +5,10 @@
 1 GHz processor, 2 GB RAM, 10GB storage minimum  
 Ubuntu 20.04 LTS server
 
+### login
+
+create and use a user named `ubuntu`
+
 ### install Go
 
 [Go download & install](https://go.dev/doc/install)  
@@ -51,7 +55,8 @@ edit `create_db.sql` to set the cardapp password
 ### boltcard service install
 `$ sudo cp boltcard.service /etc/systemd/system/boltcard.service`  
 `$ ./s_build`  
-`$ systemctl status boltcard`
+`$ sudo systemctl enable boltcard`  
+`$ sudo systemctl status boltcard`
 
 ### https setup
 set up the domain A record to point to the server  
@@ -75,9 +80,14 @@ this should respond with 'bad request' and show up in the service log
 navigate to the service URL from a browser, for example `https://card.yourdomain.com/ln?2`  
 this should respond with 'bad request' and show up in the service log  
 #### bolt card
-[create a bolt card](CARD.md) with the URI pointing to this server  
+[create a bolt card](CARD_ANDROID.md) with the URI pointing to this server  
 use a PoS setup to read the bolt card, e.g. [Breez wallet](https://breez.technology/)   
 monitor the service log to ensure decryption, authentication, payment rules and lightning payment work as expected  
+#### production use
+ensure that LOG_LEVEL is set to PRODUCTION  
+ensure that all secrets are minimally available  
+ensure that you have good operational security practices  
+monitor the system for unusual activity  
 
 # Further information and support
 

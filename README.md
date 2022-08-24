@@ -16,9 +16,9 @@ The 'bolt card creation' instructions describe how to set up bolt cards for use 
 | --- | --- |
 | [Specification](docs/SPEC.md) | Bolt card specifications |
 | [System](docs/SYSTEM.md) | Bolt card system overview |
-| [Install](docs/INSTALL.md) | Bolt card service installation |
+| [Service Install](docs/INSTALL.md) | Bolt card service installation |
 | [Automatic Card Creation](docs/CARD_ANDROID.md) | Bolt card creation using the Bolt Card app|
-| [Manual Card Creation](docs/CARD_MANUAL.md) | Bolt card creation using NXP TagXplorer|
+| [Manual Card Creation](docs/CARD_MANUAL.md) | Bolt card creation using NXP TagXplorer software|
 | [FAQ](docs/FAQ.md) | Frequently asked questions |
 
 ## Telegram group
