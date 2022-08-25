@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	log "github.com/sirupsen/logrus"
 	"net/http"
@@ -55,6 +56,13 @@ func new_card_request(w http.ResponseWriter, req *http.Request) {
 	lnurlw_base := "lnurlw://" + host_domain + "/ln"
 
 	c, err := db_get_new_card(a)
+
+	if err == sql.ErrNoRows {
+		log.Debug(err)
+		write_error_message(w, "one time code was used or does not exist")
+		return
+	}
+
 	if err != nil {
 		log.Warn(err)
 		write_error(w)
