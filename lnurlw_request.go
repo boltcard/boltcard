@@ -109,8 +109,12 @@ func setup_card_record(uid string, ctr uint32, uid_bin []byte, ctr_bin []byte, c
 			if err != nil {
 				return err
 			}
+
+			return nil
 		}
 	}
+
+	log.Info("card record not found")
 
 	return nil
 }
@@ -182,7 +186,6 @@ func parse_request(req *http.Request) (int, error) {
 
 	if card_count == 0 {
 		setup_card_record(uid_str, ctr_int, uid, ctr, ba_c)
-		return 0, errors.New("card uid & ctr setup only")
 	}
 
 	if card_count > 1 {
