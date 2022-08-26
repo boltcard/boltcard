@@ -45,7 +45,6 @@ $ xxd -r -p SendPaymentV2.macaroon.hex SendPaymentV2.macaroon
 ### setup the boltcard server
 edit `boltcard.service` in the section named `boltcard service settings`  
 edit `Caddyfile` to set the boltcard domain name  
-edit `add_card_data.sql` to set up the individual bolt card records
 
 ### database creation
 edit `create_db.sql` to set the cardapp password  
