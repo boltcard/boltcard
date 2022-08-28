@@ -5,6 +5,40 @@
 1 GHz processor, 2 GB RAM, 10GB storage minimum  
 Ubuntu 20.04 LTS server
 
+## With docker & docker-compose
+### 1. Download the boltcard repository
+
+`$ git clone https://github.com/boltcard/boltcard`
+
+### 2. Get a macaroon and tls.cert from the lightning node
+
+Create a macaroon with limited permissions to the lightning node  
+[lncli download & install](https://github.com/lightningnetwork/lnd/blob/master/docs/INSTALL.md)
+```
+$ lncli \                                                    
+--rpcserver=lightning-node.io:10009 \
+--macaroonpath=admin.macaroon \
+--tlscertpath="tls.cert" \
+bakemacaroon uri:/routerrpc.Router/SendPaymentV2 > SendPaymentV2.macaroon.hex
+
+$ xxd -r -p SendPaymentV2.macaroon.hex SendPaymentV2.macaroon
+```
+Copy tls.cert and SendPaymentV2.macaroon to your boltcard directory
+
+### 3. Configure and run
+
+Edit the .env file to your preference and run
+
+```
+docker-compose up -d
+```
+
+This will spin up a *postgresql* container, and the *boltcard service* container available at port **9000**. For publishing with a domain name and https, you can use a reverse proxy like nginx, traefik or caddy.
+
+You can monitor with ```docker logs container_name```.
+
+## Without docker
+
 ### login
 
 create and use a user named `ubuntu`
