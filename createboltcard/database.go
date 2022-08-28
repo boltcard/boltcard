@@ -46,7 +46,14 @@ func db_delete_expired() error {
 	return nil
 }
 
-func db_insert_card(one_time_code string, lock_key string, aes_cmac string) error {
+func db_insert_card(one_time_code string, k0_auth_key string, k2_cmac_key string, k3 string, k4 string,
+	tx_max_sats int, day_max_sats int, enable_flag bool, card_name string) error {
+
+	enable_flag_yn := "N"
+
+	if enable_flag == true {
+		enable_flag_yn = "Y"
+	}
 
 	db, err := db_open()
 	if err != nil {
@@ -57,10 +64,12 @@ func db_insert_card(one_time_code string, lock_key string, aes_cmac string) erro
 	// insert a new record into cards
 
 	sqlStatement := `INSERT INTO cards` +
-		` (one_time_code, lock_key, aes_cmac, uid, last_counter_value,` +
-		` lnurlw_request_timeout_sec, tx_limit_sats, day_limit_sats, one_time_code_used)` +
-		` VALUES ($1, $2, $3, '', 0, 60, 1000, 10000, 'N');`
-	res, err := db.Exec(sqlStatement, one_time_code, lock_key, aes_cmac)
+		` (one_time_code, k0_auth_key, k2_cmac_key, k3, k4, uid, last_counter_value,` +
+		` lnurlw_request_timeout_sec, tx_limit_sats, day_limit_sats, enable_flag,` +
+		` one_time_code_used, card_name)` +
+		` VALUES ($1, $2, $3, $4, $5, '', 0, 60, $6, $7, $8, 'N', $9);`
+	res, err := db.Exec(sqlStatement, one_time_code, k0_auth_key, k2_cmac_key, k3, k4,
+		tx_max_sats, day_max_sats, enable_flag_yn, card_name)
 	if err != nil {
 		return err
 	}

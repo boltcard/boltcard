@@ -2,5 +2,16 @@
 sudo systemctl stop postgresql
 sudo systemctl start postgresql
 
-psql postgres -f create_db.sql
-psql postgres -f add_card_data.sql
+echo This will delete all of the data in your database.
+echo Your card keys are part of this data.
+echo Continue? "(y or n)"
+
+read x
+
+if [ "$x" = "y" ]; then
+	psql postgres -f create_db.sql
+	echo Database created
+else
+	echo No action
+fi
+

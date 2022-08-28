@@ -11,8 +11,8 @@ import (
 	"strconv"
 	"time"
 
-	lnrpc "github.com/lncm/lnd-rpc/v0.10.0/lnrpc"
-	routerrpc "github.com/lncm/lnd-rpc/v0.10.0/routerrpc"
+	lnrpc "github.com/lightningnetwork/lnd/lnrpc"
+	routerrpc "github.com/lightningnetwork/lnd/lnrpc/routerrpc"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"

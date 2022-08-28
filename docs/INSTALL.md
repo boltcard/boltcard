@@ -45,7 +45,6 @@ $ xxd -r -p SendPaymentV2.macaroon.hex SendPaymentV2.macaroon
 ### setup the boltcard server
 edit `boltcard.service` in the section named `boltcard service settings`  
 edit `Caddyfile` to set the boltcard domain name  
-edit `add_card_data.sql` to set up the individual bolt card records
 
 ### database creation
 edit `create_db.sql` to set the cardapp password  
@@ -80,7 +79,7 @@ this should respond with 'bad request' and show up in the service log
 navigate to the service URL from a browser, for example `https://card.yourdomain.com/ln?2`  
 this should respond with 'bad request' and show up in the service log  
 #### bolt card
-[create a bolt card](CARD.md) with the URI pointing to this server  
+[create a bolt card](CARD_ANDROID.md) with the URI pointing to this server  
 use a PoS setup to read the bolt card, e.g. [Breez wallet](https://breez.technology/)   
 monitor the service log to ensure decryption, authentication, payment rules and lightning payment work as expected  
 #### production use
