@@ -1,8 +1,5 @@
 SELECT 'CREATE DATABASE card_db' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'card_db');
 
-DROP USER cardapp;
-CREATE USER cardapp WITH PASSWORD 'database_password';
-
 \c card_db;
 
 CREATE TABLE cards (
