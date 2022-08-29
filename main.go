@@ -25,6 +25,9 @@ func main() {
 
 	if log_level == "DEBUG" {
 		log.SetLevel(log.DebugLevel)
+		log.Info("bolt card service started - debug log level")
+	} else {
+		log.Info("bolt card service started - production log level")
 	}
 
 	log.SetFormatter(&log.JSONFormatter{
