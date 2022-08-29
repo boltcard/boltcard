@@ -1,0 +1,52 @@
+version: '3'
+services:
+  boltcard:
+    build: .
+    container_name: boltcard_main
+    depends_on:
+     - db
+    restart: unless-stopped
+    environment:
+      - LOG_LEVEL=DEBUG
+      - DB_HOST=db
+
+      - HOST_DOMAIN=${HOST_DOMAIN} 
+      - AES_DECRYPT_KEY=${BC_AES_DECRYPT_KEY}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - MIN_WITHDRAW_SATS=${BC_MIN_WITHDRAW_SATS}
+      - MAX_WITHDRAW_SATS=${BC_MAX_WITHDRAW_SATS}
+      - FEE_LIMIT_SAT=${BC_FEE_LIMIT_SAT}
+      - LN_HOST=${LN_HOST}
+      - LN_PORT=${LN_GRPC_PORT}
+      - LN_TESTNODE=${LN_TESTNODE}
+
+      - LN_TLS_FILE=/boltcard/tls.cert
+      - LN_MACAROON_FILE=/boltcard/SendPaymentV2.macaroon
+    ports:
+      - 9000:9000
+    volumes:
+    - ${PWD}/tls.cert:/boltcard/tls.cert
+    - ${PWD}/SendPaymentV2.macaroon:/boltcard/SendPaymentV2.macaroon
+    networks:
+        - boltnet
+  db:
+    image: postgres:14.4-bullseye
+    container_name: boltcard_db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+    - db-data:/var/lib/postgresql/data
+    - ${PWD}/create_db.sql:/docker-entrypoint-initdb.d/10-create_db.sql
+    networks:
+    - boltnet
+networks:
+  boltnet:
+volumes:
+  db-data:

@@ -1,8 +1,4 @@
-DROP DATABASE IF EXISTS card_db;
-CREATE DATABASE card_db;
-
-DROP USER cardapp;
-CREATE USER cardapp WITH PASSWORD 'database_password';
+SELECT 'CREATE DATABASE card_db' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'card_db');
 
 \c card_db;
 

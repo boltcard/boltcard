@@ -42,6 +42,7 @@ on the bolt card server
 - `./createboltcard -help` to see options
 - `./createboltcard -enable -tx_max=1000 -day_max=10000 -name=card_1` for example
 - this will give you a one-time link in text and QR code form
+- if the boltcard service is running in **docker**, use ```docker exec boltcard_main createboltcard/createboltcard``` instead
 
 on the app
 - select `Key Management`
@@ -50,7 +51,7 @@ on the app
 - bring the card to the device for programming the keys
 
 ### Update the card record on the server
-on the bolt card server
+on the bolt card db server
 - `$ psql card_db`
 - `card_db=# select card_id, one_time_code from cards order by card_id desc limit 1;`
 - check that this is the correct record (one_time_code matches from before)
