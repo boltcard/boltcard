@@ -5,9 +5,10 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
+	"os"
+
 	log "github.com/sirupsen/logrus"
 	qrcode "github.com/skip2/go-qrcode"
-	"os"
 )
 
 func random_hex() string {

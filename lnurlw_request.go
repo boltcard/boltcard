@@ -4,10 +4,11 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 	"strconv"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type Response struct {
