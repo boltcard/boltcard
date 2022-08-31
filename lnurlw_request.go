@@ -97,7 +97,7 @@ func setup_card_record(uid string, ctr uint32, uid_bin []byte, ctr_bin []byte, c
 			return err
 		}
 
-		if cmac_valid == true {
+		if cmac_valid {
 			log.WithFields(log.Fields{
 				"i":                i,
 				"card.card_id":     card.card_id,
@@ -223,7 +223,7 @@ func parse_request(req *http.Request) (int, error) {
 		return 0, err
 	}
 
-	if cmac_valid == false {
+	if !cmac_valid {
 		return 0, errors.New("cmac incorrect")
 	}
 
@@ -235,7 +235,7 @@ func parse_request(req *http.Request) (int, error) {
 		return 0, err
 	}
 
-	if counter_ok == false {
+	if !counter_ok {
 		return 0, errors.New("counter not increasing")
 	}
 

@@ -34,7 +34,7 @@ func main() {
 
 	// handle -help
 
-	if *help_flag_ptr == true {
+	if *help_flag_ptr {
 		flag.PrintDefaults()
 		return
 	}
