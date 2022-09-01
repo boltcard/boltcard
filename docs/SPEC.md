@@ -1,13 +1,16 @@
 # Bolt card specification
 
-The bolt card system is built on the open standards listed below.
+The bolt card system is built on the technologies listed below.
 
 - [LUD-03: withdrawRequest base spec.](https://github.com/fiatjaf/lnurl-rfc/blob/luds/03.md)
 - [LUD-17: Protocol schemes and raw (non bech32-encoded) URLs.](https://github.com/fiatjaf/lnurl-rfc/blob/luds/17.md)
+- NFC Data Exchange Format (NDEF)
+- Replay protection
+  - NXP Secure Unique NFC Message (SUN) technology as implemented in the NXP NTAG 424 DNA card
 
 ## Bolt card and POS interaction
 
-the point-of-sale (POS) will read an NDEF message from the card, for example
+the point-of-sale (POS) will read a NDEF message from the card, which changes with each use, for example
 ```
 lnurlw://card.yourdomain.com?p=A2EF40F6D46F1BB36E6EBF0114D4A464&c=F509EEA788E37E32
 ```
@@ -15,9 +18,9 @@ the POS will then call your bolt card service here
 ```
 https://card.yourdomain.com?p=A2EF40F6D46F1BB36E6EBF0114D4A464&c=F509EEA788E37E32
 ```
-your bolt card service should verify the payment request as below and continue the LNURLw protocol
+your bolt card service should verify the payment request as below and continue the standard LNURLw protocol as defined in LUD-03
 
-## Server side verification
+## Server side verification of the payment request
 
 - for the `p` value and the `SDM Meta Read Access Key` value, decrypt the UID and counter with AES
 - for the `c` value and the `SDM File Read Access Key` value, check with AES-CMAC
