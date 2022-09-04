@@ -41,7 +41,7 @@ func main() {
 	mux.HandleFunc("/cb", lnurlw_callback)
 
 	port := os.Getenv("HOST_PORT")
-	if len(value) == 0 {
+	if len(port) == 0 {
 		port := "9000"
 	}
 	
