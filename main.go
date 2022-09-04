@@ -1,9 +1,10 @@
 package main
 
 import (
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"os"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func write_error(w http.ResponseWriter) {

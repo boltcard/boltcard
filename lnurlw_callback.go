@@ -1,10 +1,11 @@
 package main
 
 import (
-	decodepay "github.com/fiatjaf/ln-decodepay"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"os"
+
+	decodepay "github.com/fiatjaf/ln-decodepay"
+	log "github.com/sirupsen/logrus"
 )
 
 func lnurlw_callback(w http.ResponseWriter, req *http.Request) {
@@ -44,7 +45,7 @@ func lnurlw_callback(w http.ResponseWriter, req *http.Request) {
 		write_error(w)
 		return
 	}
-	if lnurlw_timeout == true {
+	if lnurlw_timeout {
 		log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Info("lnurlw request has timed out")
 		write_error(w)
 		return

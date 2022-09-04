@@ -3,9 +3,10 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"os"
+
+	log "github.com/sirupsen/logrus"
 )
 
 /**

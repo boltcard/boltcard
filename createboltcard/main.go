@@ -5,9 +5,10 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
+	"os"
+
 	log "github.com/sirupsen/logrus"
 	qrcode "github.com/skip2/go-qrcode"
-	"os"
 )
 
 func random_hex() string {
@@ -33,7 +34,7 @@ func main() {
 
 	// handle -help
 
-	if *help_flag_ptr == true {
+	if *help_flag_ptr {
 		flag.PrintDefaults()
 		return
 	}
@@ -73,6 +74,6 @@ func main() {
 	fmt.Println()
 	fmt.Println(url)
 	fmt.Println()
-	q, err := qrcode.New(url, qrcode.Medium)
+	q, _ := qrcode.New(url, qrcode.Medium)
 	fmt.Println(q.ToSmallString(false))
 }

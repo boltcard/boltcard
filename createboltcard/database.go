@@ -4,8 +4,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	_ "github.com/lib/pq"
 	"os"
+
+	_ "github.com/lib/pq"
 )
 
 func db_open() (*sql.DB, error) {
@@ -51,7 +52,7 @@ func db_insert_card(one_time_code string, k0_auth_key string, k2_cmac_key string
 
 	enable_flag_yn := "N"
 
-	if enable_flag == true {
+	if enable_flag {
 		enable_flag_yn = "Y"
 	}
 
