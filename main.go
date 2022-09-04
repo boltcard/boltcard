@@ -42,7 +42,7 @@ func main() {
 
 	port := os.Getenv("HOST_PORT")
 	if len(port) == 0 {
-		port := "9000"
+		port = "9000"
 	}
 	
 	err := http.ListenAndServe(":" + port, mux)
