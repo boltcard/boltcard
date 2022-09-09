@@ -40,6 +40,11 @@ func main() {
 	mux.HandleFunc("/ln", lnurlw_response)
 	mux.HandleFunc("/cb", lnurlw_callback)
 
-	err := http.ListenAndServe(":9000", mux)
+	port := os.Getenv("HOST_PORT")
+	if len(port) == 0 {
+		port = "9000"
+	}
+	
+	err := http.ListenAndServe(":" + port, mux)
 	log.Fatal(err)
 }

@@ -52,8 +52,7 @@ func new_card_request(w http.ResponseWriter, req *http.Request) {
 
 	a := params_a[0]
 
-	host_domain := os.Getenv("HOST_DOMAIN")
-	lnurlw_base := "lnurlw://" + host_domain + "/ln"
+	lnurlw_base := "lnurlw://" + req.Host + "/ln"
 
 	c, err := db_get_new_card(a)
 

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type Response struct {
@@ -271,8 +272,12 @@ func lnurlw_response(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	host_domain := os.Getenv("HOST_DOMAIN")
-	lnurlw_cb_url := "https://" + host_domain + "/cb"
+	lnurlw_cb_url := ""
+	if strings.HasSuffix(req.Host, ".onion") {
+		lnurlw_cb_url = "http://" + req.Host + "/cb"
+	} else {
+		lnurlw_cb_url = "https://" + req.Host + "/cb"
+	}
 
 	min_withdraw_sats_str := os.Getenv("MIN_WITHDRAW_SATS")
 	min_withdraw_sats, err := strconv.Atoi(min_withdraw_sats_str)

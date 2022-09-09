@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	qrcode "github.com/skip2/go-qrcode"
 	"os"
+	"strings"
 )
 
 func random_hex() string {
@@ -69,7 +70,13 @@ func main() {
 	// show a QR code on the console for the URI + one_time_code
 
 	hostdomain := os.Getenv("HOST_DOMAIN")
-	url := "https://" + hostdomain + "/new?a=" + one_time_code
+	url := ""
+	if strings.HasSuffix(hostdomain, ".onion") {
+		url = "http://" + hostdomain + "/new?a=" + one_time_code
+	} else {
+		url = "https://" + hostdomain + "/new?a=" + one_time_code
+	}
+	
 	fmt.Println()
 	fmt.Println(url)
 	fmt.Println()
