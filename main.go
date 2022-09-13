@@ -2,9 +2,13 @@ package main
 
 import (
 	log "github.com/sirupsen/logrus"
+	"github.com/gorilla/mux"
 	"net/http"
+	"time"
 	"os"
 )
+
+var router = mux.NewRouter()
 
 func write_error(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
@@ -34,17 +38,25 @@ func main() {
 		DisableHTMLEscape: true,
 	})
 
-	mux := http.NewServeMux()
-
-	mux.HandleFunc("/new", new_card_request)
-	mux.HandleFunc("/ln", lnurlw_response)
-	mux.HandleFunc("/cb", lnurlw_callback)
+// createboltcard
+	router.Path("/new").HandlerFunc(new_card_request)
+// lnurlw for pos
+	router.Path("/ln").HandlerFunc(lnurlw_response)
+	router.Path("/cb").HandlerFunc(lnurlw_callback)
+// lnurlp for lightning address
+//	mux.HandleFunc("/.well-known/lnurlp/", lnurlp_response)
 
 	port := os.Getenv("HOST_PORT")
 	if len(port) == 0 {
 		port = "9000"
 	}
-	
-	err := http.ListenAndServe(":" + port, mux)
-	log.Fatal(err)
+
+	srv := &http.Server{
+		Handler:      router,
+		Addr:         ":" + port, // consider adding host
+		WriteTimeout: 30 * time.Second,
+		ReadTimeout:  30 * time.Second,
+	}
+
+	srv.ListenAndServe()
 }
