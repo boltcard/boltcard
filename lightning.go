@@ -32,7 +32,7 @@ func newCreds(bytes []byte) rpcCreds {
 	return creds
 }
 
-func getRouterClient(hostname string, port int, tlsFile, macaroonFile string) routerrpc.RouterClient {
+func getGrpcConn(hostname string, port int, tlsFile, macaroonFile string) *grpc.ClientConn {
 	macaroonBytes, err := ioutil.ReadFile(macaroonFile)
 	if err != nil {
 		log.Println("Cannot read macaroon file .. ", err)
@@ -65,7 +65,7 @@ func getRouterClient(hostname string, port int, tlsFile, macaroonFile string) ro
 		panic(err)
 	}
 
-	return routerrpc.NewRouterClient(connection)
+	return connection
 }
 
 func pay_invoice(invoice string) (payment_status string, failure_reason string, return_err error) {
@@ -87,11 +87,13 @@ func pay_invoice(invoice string) (payment_status string, failure_reason string, 
 		return
 	}
 
-	r_client := getRouterClient(
+	connection := getGrpcConn(
 		os.Getenv("LN_HOST"),
 		ln_port,
 		os.Getenv("LN_TLS_FILE"),
 		os.Getenv("LN_MACAROON_FILE"))
+
+	r_client := routerrpc.NewRouterClient(connection)
 
 	fee_limit_sat_str := os.Getenv("FEE_LIMIT_SAT")
 	fee_limit_sat, err := strconv.ParseInt(fee_limit_sat_str, 10, 64)
@@ -126,6 +128,8 @@ func pay_invoice(invoice string) (payment_status string, failure_reason string, 
 		payment_status = lnrpc.Payment_PaymentStatus_name[int32(update.Status)]
 		failure_reason = lnrpc.PaymentFailureReason_name[int32(update.FailureReason)]
 	}
+
+	connection.Close()
 
 	return
 }

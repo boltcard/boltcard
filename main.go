@@ -35,6 +35,7 @@ func lnurlp_response(w http.ResponseWriter, r *http.Request) {
 		},).Info("lnurlp_response")
 
 // look up domain in env vars (HOST_DOMAIN)
+
 	env_host_domain := os.Getenv("HOST_DOMAIN")
 	if r.Host != env_host_domain {
 		log.Warn("wrong host domain")
