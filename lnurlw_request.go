@@ -182,7 +182,7 @@ func parse_request(req *http.Request) (int, error) {
 	card_count, err := db_get_card_count_for_uid(uid_str)
 
 	if err != nil {
-		return 0, errors.New("could not get card records count")
+		return 0, errors.New("could not get card count for uid")
 	}
 
 	if card_count == 0 {
@@ -245,6 +245,13 @@ func parse_request(req *http.Request) (int, error) {
 }
 
 func lnurlw_response(w http.ResponseWriter, req *http.Request) {
+
+	env_host_domain := os.Getenv("HOST_DOMAIN")
+	if req.Host != env_host_domain {
+		log.Warn("wrong host domain")
+		write_error(w)
+		return
+	}
 
 	card_id, err := parse_request(req)
 

@@ -106,6 +106,27 @@ func db_get_card_count_for_uid(uid string) (int, error) {
 	return card_count, nil
 }
 
+func db_get_card_count_for_name(name string) (int, error) {
+
+	card_count := 0
+
+	db, err := db_open()
+	if err != nil {
+		return 0, err
+	}
+	defer db.Close()
+
+	sqlStatement := `select count(card_id) from cards where card_name=$1;`
+
+	row := db.QueryRow(sqlStatement, name)
+	err = row.Scan(&card_count)
+	if err != nil {
+		return 0, err
+	}
+
+	return card_count, nil
+}
+
 func db_get_cards_blank_uid() ([]Card, error) {
 
 	// open the database

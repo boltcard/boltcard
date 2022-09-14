@@ -9,6 +9,13 @@ import (
 
 func lnurlw_callback(w http.ResponseWriter, req *http.Request) {
 
+        env_host_domain := os.Getenv("HOST_DOMAIN")
+        if req.Host != env_host_domain {
+                log.Warn("wrong host domain")
+                write_error(w)
+                return
+        }
+
 	url := req.URL.RequestURI()
 	log.WithFields(log.Fields{"url": url}).Debug("cb request")
 
