@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 	"os"
+	"strconv"
 )
 
 var router = mux.NewRouter()
@@ -36,8 +37,8 @@ func lnurlp_response(w http.ResponseWriter, r *http.Request) {
 
 // look up domain in env vars (HOST_DOMAIN)
 
-	env_host_domain := os.Getenv("HOST_DOMAIN")
-	if r.Host != env_host_domain {
+	domain := os.Getenv("HOST_DOMAIN")
+	if r.Host != domain {
 		log.Warn("wrong host domain")
 		write_error(w)
 		return
@@ -58,12 +59,14 @@ func lnurlp_response(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	metadata := "[[\\\"text/identifier\\\",\\\"" + name + "@" + domain + "\\\"],[\\\"text/plain\\\",\\\"" + name + "@" + domain + "\\\"]]"
+
 	jsonData := []byte(`{"status":"OK",` +
-		`"callback":"https://` + env_host_domain + `/lnurlp/` + name + `",` +
+		`"callback":"https://` + domain + `/lnurlp/` + name + `",` +
 		`"tag":"payRequest",` +
 		`"maxSendable":1000000000,` +
 		`"minSendable":1000,` +
-		`"metadata":"[[\"text/plain\",\"` + name + `@` + env_host_domain + `\"]]",` +
+		`"metadata":"` + metadata + `",` +
 		`"commentAllowed":0` +
 	`}`)
 
@@ -84,7 +87,29 @@ func lnurlp_callback(w http.ResponseWriter, r *http.Request) {
 			"req.Host": r.Host,
 		},).Info("lnurlp_callback")
 
+	domain := os.Getenv("HOST_DOMAIN")
+	if r.Host != domain {
+		log.Warn("wrong host domain")
+		write_error(w)
+		return
+	}
 
+//TODO add err
+	amount_msat, _ := strconv.ParseInt(amount, 10, 64)
+	amount_sat	:= amount_msat / 1000;
+
+//TODO add err
+	metadata := "[[\"text/identifier\",\"" + name + "@" + domain + "\"],[\"text/plain\",\"" + name + "@" + domain + "\"]]"
+	pr, _ := add_invoice(amount_sat, metadata)
+
+	jsonData := []byte(`{` +
+		`"status":"OK","successAction":{"tag":"message","message":"Payment success!"}` +
+		`,"routes":[],"pr":"` + pr + `","disposable":false` +
+	`}`)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonData)
 }
 
 func main() {

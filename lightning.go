@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"strconv"
 	"time"
+	"crypto/sha256"
 
 	lnrpc "github.com/lightningnetwork/lnd/lnrpc"
 	routerrpc "github.com/lightningnetwork/lnd/lnrpc/routerrpc"
@@ -68,6 +69,38 @@ func getGrpcConn(hostname string, port int, tlsFile, macaroonFile string) *grpc.
 	return connection
 }
 
+func add_invoice(amount_sat int64, metadata string) (payment_request string, return_err error) {
+
+	ln_port, err := strconv.Atoi(os.Getenv("LN_PORT"))
+	if err != nil {
+		return "", err
+	}
+
+	dh := sha256.Sum256([]byte(metadata))
+
+	connection := getGrpcConn(
+		os.Getenv("LN_HOST"),
+		ln_port,
+		os.Getenv("LN_TLS_FILE"),
+		os.Getenv("LN_MACAROON_FILE"))
+
+	l_client := lnrpc.NewLightningClient(connection)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	result, err := l_client.AddInvoice(ctx, &lnrpc.Invoice {
+		Value:			amount_sat,
+		DescriptionHash:	dh[:],
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return result.PaymentRequest, nil
+}
+
 func pay_invoice(invoice string) (payment_status string, failure_reason string, return_err error) {
 
 	payment_status = ""
@@ -75,9 +108,6 @@ func pay_invoice(invoice string) (payment_status string, failure_reason string, 
 	return_err = nil
 
 	// SendPaymentV2
-
-	ctx2, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
 
 	// get node parameters from environment variables
 
@@ -102,7 +132,10 @@ func pay_invoice(invoice string) (payment_status string, failure_reason string, 
 		return
 	}
 
-	stream, err := r_client.SendPaymentV2(ctx2, &routerrpc.SendPaymentRequest{
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	stream, err := r_client.SendPaymentV2(ctx, &routerrpc.SendPaymentRequest{
 		PaymentRequest:    invoice,
 		NoInflightUpdates: true,
 		TimeoutSeconds:    30,
