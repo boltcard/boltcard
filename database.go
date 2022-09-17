@@ -106,7 +106,7 @@ func db_get_card_count_for_uid(uid string) (int, error) {
 	return card_count, nil
 }
 
-func db_get_card_count_for_name(name string) (int, error) {
+func db_get_card_count_for_name_enabled(name string) (int, error) {
 
 	card_count := 0
 
@@ -116,7 +116,7 @@ func db_get_card_count_for_name(name string) (int, error) {
 	}
 	defer db.Close()
 
-	sqlStatement := `select count(card_id) from cards where card_name=$1;`
+	sqlStatement := `select count(card_id) from cards where card_name=$1 and enable_flag='Y';`
 
 	row := db.QueryRow(sqlStatement, name)
 	err = row.Scan(&card_count)
@@ -125,6 +125,27 @@ func db_get_card_count_for_name(name string) (int, error) {
 	}
 
 	return card_count, nil
+}
+
+func db_get_card_id_for_name(name string) (int, error) {
+
+	card_id := 0
+
+	db, err := db_open()
+	if err != nil {
+		return 0, err
+	}
+	defer db.Close()
+
+	sqlStatement := `select card_id from cards where card_name=$1;`
+
+	row := db.QueryRow(sqlStatement, name)
+	err = row.Scan(&card_id)
+	if err != nil {
+		return 0, err
+	}
+
+	return card_id, nil
 }
 
 func db_get_cards_blank_uid() ([]Card, error) {
@@ -335,6 +356,63 @@ func db_insert_payment(card_id int, lnurlw_k1 string) error {
 	return nil
 }
 
+func db_insert_receipt(
+	card_id int,
+	ln_invoice string,
+	r_hash_hex string,
+	amount_msat int64) error {
+
+	db, err := db_open()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	// insert a new record into card_receipts
+
+	sqlStatement := `INSERT INTO card_receipts` +
+		` (card_id, ln_invoice, r_hash_hex, amount_msats, receipt_status_time)` +
+		` VALUES ($1, $2, $3, $4, NOW());`
+	res, err := db.Exec(sqlStatement, card_id, ln_invoice, r_hash_hex, amount_msat)
+	if err != nil {
+		return err
+	}
+	count, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if count != 1 {
+		return errors.New("not one card_receipts record inserted")
+	}
+
+	return nil
+}
+
+func db_update_receipt_state(r_hash_hex string, invoice_state string) error {
+	db, err := db_open()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	sqlStatement := `UPDATE card_receipts ` +
+		`SET receipt_status = $2, receipt_status_time = NOW() ` +
+		`WHERE r_hash_hex = $1;`
+	res, err := db.Exec(sqlStatement, r_hash_hex, invoice_state)
+	if err != nil {
+		return err
+	}
+	count, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if count != 1 {
+		return errors.New("not one card_receipts record updated")
+	}
+
+	return nil
+}
+
 func db_get_payment_k1(lnurlw_k1 string) (*payment, error) {
 	p := payment{}
 
@@ -376,7 +454,7 @@ func db_update_payment_invoice(card_payment_id int, ln_invoice string, amount_ms
 		return err
 	}
 	if count != 1 {
-		return errors.New("not one card_payment record updated")
+		return errors.New("not one card_payments record updated")
 	}
 
 	return nil

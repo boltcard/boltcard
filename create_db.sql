@@ -41,5 +41,18 @@ CREATE TABLE card_payments (
 	CONSTRAINT fk_card FOREIGN KEY(card_id) REFERENCES cards(card_id)
 );
 
+CREATE TABLE card_receipts (
+	card_receipt_id INT GENERATED ALWAYS AS IDENTITY,
+	card_id INT NOT NULL,
+	ln_invoice VARCHAR(1024) NOT NULL DEFAULT '',
+	r_hash_hex VARCHAR(64) UNIQUE NOT NULL DEFAULT '',
+	amount_msats BIGINT CHECK (amount_msats > 0),
+	receipt_status VARCHAR(100) NOT NULL DEFAULT '',
+	receipt_status_time TIMESTAMPTZ,
+	CONSTRAINT fk_card FOREIGN KEY(card_id) REFERENCES cards(card_id)
+);
+
 GRANT ALL PRIVILEGES ON TABLE cards TO cardapp;
 GRANT ALL PRIVILEGES ON TABLE card_payments TO cardapp;
+GRANT ALL PRIVILEGES ON TABLE card_receipts TO cardapp;
+

@@ -28,7 +28,7 @@ func lnurlp_response(w http.ResponseWriter, r *http.Request) {
 
 // look up name in database (table cards, field card_name)
 
-        card_count, err := db_get_card_count_for_name(name)
+        card_count, err := db_get_card_count_for_name_enabled(name)
         if err != nil {
                 log.Warn("could not get card count for name")
                 write_error(w)
@@ -36,7 +36,7 @@ func lnurlp_response(w http.ResponseWriter, r *http.Request) {
         }
 
         if card_count != 1 {
-                log.Info("not one card with that name")
+                log.Info("not one enabled card with that name")
                 write_error(w)
                 return
         }

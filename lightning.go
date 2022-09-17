@@ -153,7 +153,7 @@ func monitor_invoice_state(r_hash []byte) () {
                         "invoice_state": invoice_state,
                 },).Info("invoice state updated")
 
-//TODO: update database
+		db_update_receipt_state(hex.EncodeToString(r_hash), invoice_state)
 	}
 
 	connection.Close()
