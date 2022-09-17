@@ -41,7 +41,7 @@ func lnurlp_response(w http.ResponseWriter, r *http.Request) {
                 return
         }
 
-        metadata := "[[\\\"text/identifier\\\",\\\"" + name + "@" + domain + "\\\"],[\\\"text/plain\\\",\\\"" + name + "@" + domain + "\\\"]]"
+        metadata := "[[\\\"text/identifier\\\",\\\"" + name + "@" + domain + "\\\"],[\\\"text/plain\\\",\\\"bolt card deposit\\\"]]"
 
         jsonData := []byte(`{"status":"OK",` +
                 `"callback":"https://` + domain + `/lnurlp/` + name + `",` +

@@ -32,12 +32,13 @@ func lnurlp_callback(w http.ResponseWriter, r *http.Request) {
         amount_sat      := amount_msat / 1000;
 
 //TODO add err
-        metadata := "[[\"text/identifier\",\"" + name + "@" + domain + "\"],[\"text/plain\",\"" + name + "@" + domain + "\"]]"
+        metadata := "[[\"text/identifier\",\"" + name + "@" + domain + "\"],[\"text/plain\",\"bolt card deposit\"]]"
         pr, r_hash, _ := add_invoice(amount_sat, metadata)
 
         jsonData := []byte(`{` +
-                `"status":"OK","successAction":{"tag":"message","message":"Payment success!"}` +
-                `,"routes":[],"pr":"` + pr + `","disposable":false` +
+                `"status":"OK",` +
+                `"routes":[],` +
+		`"pr":"` + pr + `"` +
         `}`)
 
         w.Header().Set("Content-Type", "application/json")
