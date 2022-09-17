@@ -13,6 +13,7 @@ import (
 	"crypto/sha256"
 
 	lnrpc "github.com/lightningnetwork/lnd/lnrpc"
+	invoicesrpc "github.com/lightningnetwork/lnd/lnrpc/invoicesrpc"
 	routerrpc "github.com/lightningnetwork/lnd/lnrpc/routerrpc"
 
 	"google.golang.org/grpc"
@@ -69,11 +70,13 @@ func getGrpcConn(hostname string, port int, tlsFile, macaroonFile string) *grpc.
 	return connection
 }
 
-func add_invoice(amount_sat int64, metadata string) (payment_request string, return_err error) {
+// https://api.lightning.community/?shell#addinvoice
+
+func add_invoice(amount_sat int64, metadata string) (payment_request string, r_hash []byte, return_err error) {
 
 	ln_port, err := strconv.Atoi(os.Getenv("LN_PORT"))
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 
 	dh := sha256.Sum256([]byte(metadata))
@@ -95,11 +98,70 @@ func add_invoice(amount_sat int64, metadata string) (payment_request string, ret
 	})
 
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 
-	return result.PaymentRequest, nil
+	return result.PaymentRequest, result.RHash, nil
 }
+
+// https://api.lightning.community/?shell#subscribesingleinvoice
+
+func monitor_invoice_state(r_hash []byte) () {
+
+	// SubscribeSingleInvoice
+
+	// get node parameters from environment variables
+
+	ln_port, err := strconv.Atoi(os.Getenv("LN_PORT"))
+	if err != nil {
+//TODO deal with err
+		return
+	}
+
+	connection := getGrpcConn(
+		os.Getenv("LN_HOST"),
+		ln_port,
+		os.Getenv("LN_TLS_FILE"),
+		os.Getenv("LN_MACAROON_FILE"))
+
+	i_client := invoicesrpc.NewInvoicesClient(connection)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+//TODO deal with err
+	stream, _ := i_client.SubscribeSingleInvoice(ctx, &invoicesrpc.SubscribeSingleInvoiceRequest{
+		RHash:       r_hash})
+
+	for {
+		update, err := stream.Recv()
+
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+//TODO deal with err
+			return
+		}
+
+		invoice_state := lnrpc.Invoice_InvoiceState_name[int32(update.State)]
+
+        log.WithFields(
+                log.Fields{
+                        "r_hash": hex.EncodeToString(r_hash),
+                        "invoice_state": invoice_state,
+                },).Info("invoice state updated")
+
+//TODO: update database
+	}
+
+	connection.Close()
+
+	return
+}
+
+// https://api.lightning.community/?shell#sendpaymentv2
 
 func pay_invoice(invoice string) (payment_status string, failure_reason string, return_err error) {
 

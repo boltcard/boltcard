@@ -33,7 +33,7 @@ func lnurlp_callback(w http.ResponseWriter, r *http.Request) {
 
 //TODO add err
         metadata := "[[\"text/identifier\",\"" + name + "@" + domain + "\"],[\"text/plain\",\"" + name + "@" + domain + "\"]]"
-        pr, _ := add_invoice(amount_sat, metadata)
+        pr, r_hash, _ := add_invoice(amount_sat, metadata)
 
         jsonData := []byte(`{` +
                 `"status":"OK","successAction":{"tag":"message","message":"Payment success!"}` +
@@ -43,4 +43,6 @@ func lnurlp_callback(w http.ResponseWriter, r *http.Request) {
         w.Header().Set("Content-Type", "application/json")
         w.WriteHeader(http.StatusOK)
         w.Write(jsonData)
+
+	go monitor_invoice_state(r_hash)
 }
