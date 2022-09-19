@@ -1,4 +1,5 @@
 go build
+sudo cp boltcard.service /etc/systemd/system/boltcard.service
 sudo systemctl daemon-reload
 sudo systemctl stop boltcard
 sudo systemctl start boltcard

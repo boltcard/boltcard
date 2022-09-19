@@ -163,11 +163,7 @@ func monitor_invoice_state(r_hash []byte) () {
 
 // https://api.lightning.community/?shell#sendpaymentv2
 
-func pay_invoice(invoice string) (payment_status string, failure_reason string, return_err error) {
-
-	payment_status = ""
-	failure_reason = ""
-	return_err = nil
+func pay_invoice(card_payment_id int, invoice string) {
 
 	// SendPaymentV2
 
@@ -175,7 +171,7 @@ func pay_invoice(invoice string) (payment_status string, failure_reason string, 
 
 	ln_port, err := strconv.Atoi(os.Getenv("LN_PORT"))
 	if err != nil {
-		return_err = err
+       	        log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
 		return
 	}
 
@@ -190,7 +186,7 @@ func pay_invoice(invoice string) (payment_status string, failure_reason string, 
 	fee_limit_sat_str := os.Getenv("FEE_LIMIT_SAT")
 	fee_limit_sat, err := strconv.ParseInt(fee_limit_sat_str, 10, 64)
 	if err != nil {
-		return_err = err
+       	        log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
 		return
 	}
 
@@ -204,7 +200,7 @@ func pay_invoice(invoice string) (payment_status string, failure_reason string, 
 		FeeLimitSat:       fee_limit_sat})
 
 	if err != nil {
-		return_err = err
+       	        log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
 		return
 	}
 
@@ -216,12 +212,21 @@ func pay_invoice(invoice string) (payment_status string, failure_reason string, 
 		}
 
 		if err != nil {
-			return_err = err
+        	        log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
 			return
 		}
 
-		payment_status = lnrpc.Payment_PaymentStatus_name[int32(update.Status)]
-		failure_reason = lnrpc.PaymentFailureReason_name[int32(update.FailureReason)]
+		payment_status := lnrpc.Payment_PaymentStatus_name[int32(update.Status)]
+		failure_reason := lnrpc.PaymentFailureReason_name[int32(update.FailureReason)]
+
+	        log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Info("payment failure reason : ", failure_reason)
+        	log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Info("payment status : ", payment_status)
+
+        	err = db_update_payment_status(card_payment_id, payment_status, failure_reason)
+	        if err != nil {
+        	        log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
+                	return
+        	}
 	}
 
 	connection.Close()

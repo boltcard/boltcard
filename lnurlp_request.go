@@ -8,6 +8,11 @@ import (
 )
 
 func lnurlp_response(w http.ResponseWriter, r *http.Request) {
+	if os.Getenv("FUNCTION_LNURLP") != "ENABLE" {
+		log.Debug("LNURLp function is not enabled")
+		return
+	}
+
         name := mux.Vars(r)["name"]
 
         log.WithFields(

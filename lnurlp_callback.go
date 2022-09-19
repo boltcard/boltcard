@@ -10,6 +10,11 @@ import (
 )
 
 func lnurlp_callback(w http.ResponseWriter, r *http.Request) {
+        if os.Getenv("FUNCTION_LNURLP") != "ENABLE" {
+		log.Debug("LNURLp function is not enabled")
+                return
+        }
+
         name := mux.Vars(r)["name"]
         amount := r.URL.Query().Get("amount")
 
@@ -60,6 +65,10 @@ func lnurlp_callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	go monitor_invoice_state(r_hash)
+
+	log.Debug("sending 'status OK' response");
+
         jsonData := []byte(`{` +
                 `"status":"OK",` +
                 `"routes":[],` +
@@ -69,6 +78,4 @@ func lnurlp_callback(w http.ResponseWriter, r *http.Request) {
         w.Header().Set("Content-Type", "application/json")
         w.WriteHeader(http.StatusOK)
         w.Write(jsonData)
-
-	go monitor_invoice_state(r_hash)
 }

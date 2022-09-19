@@ -339,8 +339,8 @@ func db_insert_payment(card_id int, lnurlw_k1 string) error {
 	// insert a new record into card_payments with card_id & lnurlw_k1 set
 
 	sqlStatement := `INSERT INTO card_payments` +
-		` (card_id, lnurlw_k1, paid_flag, lnurlw_request_time)` +
-		` VALUES ($1, $2, 'N', NOW());`
+		` (card_id, lnurlw_k1, paid_flag, lnurlw_request_time, payment_status_time)` +
+		` VALUES ($1, $2, 'N', NOW(), NOW());`
 	res, err := db.Exec(sqlStatement, card_id, lnurlw_k1)
 	if err != nil {
 		return err
