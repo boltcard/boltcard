@@ -42,8 +42,18 @@ Environment="LN_MACAROON_FILE=/home/ubuntu/boltcard/SendPaymentV2.macaroon"
 # FEE_LIMIT_SAT is the maximum lightning network fee to be paid
 Environment="FEE_LIMIT_SAT=10"
 
+# email
+# Environment="AWS_SES_ID="
+# Environment="AWS_SES_SECRET="
+# Environment="AWS_SES_EMAIL_FROM="
+
 # LN_TESTNODE may be used in testing and will then only pay to the defined test node pubkey
 #Environment="LN_TESTNODE=000000000000000000000000000000000000000000000000000000000000000000"
+
+# set which functions are available on the server
+Environment="FUNCTION_LNURLW=ENABLE"
+#Environment="FUNCTION_LNURLP=ENABLE"
+#Environment="FUNCTION_EMAIL=ENABLE"
 
 ExecStart=/bin/bash /home/ubuntu/boltcard/s_launch
 
