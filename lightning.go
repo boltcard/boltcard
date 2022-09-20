@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"strconv"
 	"time"
+	"crypto/sha256"
 
 	lnrpc "github.com/lightningnetwork/lnd/lnrpc"
+	invoicesrpc "github.com/lightningnetwork/lnd/lnrpc/invoicesrpc"
 	routerrpc "github.com/lightningnetwork/lnd/lnrpc/routerrpc"
 
 	"google.golang.org/grpc"
@@ -32,7 +34,7 @@ func newCreds(bytes []byte) rpcCreds {
 	return creds
 }
 
-func getRouterClient(hostname string, port int, tlsFile, macaroonFile string) routerrpc.RouterClient {
+func getGrpcConn(hostname string, port int, tlsFile, macaroonFile string) *grpc.ClientConn {
 	macaroonBytes, err := ioutil.ReadFile(macaroonFile)
 	if err != nil {
 		log.Println("Cannot read macaroon file .. ", err)
@@ -65,49 +67,72 @@ func getRouterClient(hostname string, port int, tlsFile, macaroonFile string) ro
 		panic(err)
 	}
 
-	return routerrpc.NewRouterClient(connection)
+	return connection
 }
 
-func pay_invoice(invoice string) (payment_status string, failure_reason string, return_err error) {
+// https://api.lightning.community/?shell#addinvoice
 
-	payment_status = ""
-	failure_reason = ""
-	return_err = nil
-
-	// SendPaymentV2
-
-	ctx2, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
-	// get node parameters from environment variables
+func add_invoice(amount_sat int64, metadata string) (payment_request string, r_hash []byte, return_err error) {
 
 	ln_port, err := strconv.Atoi(os.Getenv("LN_PORT"))
 	if err != nil {
-		return_err = err
-		return
+		return "", nil, err
 	}
 
-	r_client := getRouterClient(
+	dh := sha256.Sum256([]byte(metadata))
+
+	connection := getGrpcConn(
 		os.Getenv("LN_HOST"),
 		ln_port,
 		os.Getenv("LN_TLS_FILE"),
 		os.Getenv("LN_MACAROON_FILE"))
 
-	fee_limit_sat_str := os.Getenv("FEE_LIMIT_SAT")
-	fee_limit_sat, err := strconv.ParseInt(fee_limit_sat_str, 10, 64)
+	l_client := lnrpc.NewLightningClient(connection)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	result, err := l_client.AddInvoice(ctx, &lnrpc.Invoice {
+		Value:			amount_sat,
+		DescriptionHash:	dh[:],
+	})
+
 	if err != nil {
-		return_err = err
+		return "", nil, err
+	}
+
+	return result.PaymentRequest, result.RHash, nil
+}
+
+// https://api.lightning.community/?shell#subscribesingleinvoice
+
+func monitor_invoice_state(r_hash []byte) () {
+
+	// SubscribeSingleInvoice
+
+	// get node parameters from environment variables
+
+	ln_port, err := strconv.Atoi(os.Getenv("LN_PORT"))
+	if err != nil {
+       	        log.Warn(err)
 		return
 	}
 
-	stream, err := r_client.SendPaymentV2(ctx2, &routerrpc.SendPaymentRequest{
-		PaymentRequest:    invoice,
-		NoInflightUpdates: true,
-		TimeoutSeconds:    30,
-		FeeLimitSat:       fee_limit_sat})
+	connection := getGrpcConn(
+		os.Getenv("LN_HOST"),
+		ln_port,
+		os.Getenv("LN_TLS_FILE"),
+		os.Getenv("LN_MACAROON_FILE"))
 
+	i_client := invoicesrpc.NewInvoicesClient(connection)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	stream, err := i_client.SubscribeSingleInvoice(ctx, &invoicesrpc.SubscribeSingleInvoiceRequest{
+		RHash:       r_hash})
 	if err != nil {
-		return_err = err
+       	        log.WithFields(log.Fields{"r_hash": hex.EncodeToString(r_hash)}).Warn(err)
 		return
 	}
 
@@ -119,13 +144,141 @@ func pay_invoice(invoice string) (payment_status string, failure_reason string, 
 		}
 
 		if err != nil {
-			return_err = err
+	       	        log.WithFields(log.Fields{"r_hash": hex.EncodeToString(r_hash)}).Warn(err)
 			return
 		}
 
-		payment_status = lnrpc.Payment_PaymentStatus_name[int32(update.Status)]
-		failure_reason = lnrpc.PaymentFailureReason_name[int32(update.FailureReason)]
+		invoice_state := lnrpc.Invoice_InvoiceState_name[int32(update.State)]
+
+        log.WithFields(
+                log.Fields{
+                        "r_hash": hex.EncodeToString(r_hash),
+                        "invoice_state": invoice_state,
+                },).Info("invoice state updated")
+
+		db_update_receipt_state(hex.EncodeToString(r_hash), invoice_state)
 	}
+
+	connection.Close()
+
+// send email
+
+	card_id, err := db_get_card_id_for_r_hash(hex.EncodeToString(r_hash))
+        if err != nil {
+                log.WithFields(log.Fields{"r_hash": hex.EncodeToString(r_hash)}).Warn(err)
+                return
+        }
+
+        log.WithFields(log.Fields{"r_hash": hex.EncodeToString(r_hash), "card_id": card_id}).Debug("card found")
+
+        c, err := db_get_card_from_card_id(card_id)
+        if err != nil {
+                log.WithFields(log.Fields{"r_hash": hex.EncodeToString(r_hash)}).Warn(err)
+                return
+        }
+
+	if c.email_enable != "Y" {
+		log.Debug("email is not enabled for the card")
+		return
+	}
+
+	go send_email(c.email_address, "bolt card receipt", "html body", "text body")
+
+	return
+}
+
+// https://api.lightning.community/?shell#sendpaymentv2
+
+func pay_invoice(card_payment_id int, invoice string) {
+
+	// SendPaymentV2
+
+	// get node parameters from environment variables
+
+	ln_port, err := strconv.Atoi(os.Getenv("LN_PORT"))
+	if err != nil {
+       	        log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
+		return
+	}
+
+	connection := getGrpcConn(
+		os.Getenv("LN_HOST"),
+		ln_port,
+		os.Getenv("LN_TLS_FILE"),
+		os.Getenv("LN_MACAROON_FILE"))
+
+	r_client := routerrpc.NewRouterClient(connection)
+
+	fee_limit_sat_str := os.Getenv("FEE_LIMIT_SAT")
+	fee_limit_sat, err := strconv.ParseInt(fee_limit_sat_str, 10, 64)
+	if err != nil {
+       	        log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	stream, err := r_client.SendPaymentV2(ctx, &routerrpc.SendPaymentRequest{
+		PaymentRequest:    invoice,
+		NoInflightUpdates: true,
+		TimeoutSeconds:    30,
+		FeeLimitSat:       fee_limit_sat})
+
+	if err != nil {
+       	        log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
+		return
+	}
+
+	for {
+		update, err := stream.Recv()
+
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+        	        log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
+			return
+		}
+
+		payment_status := lnrpc.Payment_PaymentStatus_name[int32(update.Status)]
+		failure_reason := lnrpc.PaymentFailureReason_name[int32(update.FailureReason)]
+
+	        log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Info("payment failure reason : ", failure_reason)
+        	log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Info("payment status : ", payment_status)
+
+        	err = db_update_payment_status(card_payment_id, payment_status, failure_reason)
+	        if err != nil {
+        	        log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
+                	return
+        	}
+	}
+
+	connection.Close()
+
+// send email
+
+	card_id, err := db_get_card_id_for_card_payment_id(card_payment_id)
+        if err != nil {
+                log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
+                return
+        }
+
+        log.WithFields(log.Fields{"card_payment_id": card_payment_id, "card_id": card_id}).Debug("card found")
+
+        c, err := db_get_card_from_card_id(card_id)
+        if err != nil {
+                log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
+                return
+        }
+
+	if c.email_enable != "Y" {
+		log.Debug("email is not enabled for the card")
+		return
+	}
+
+	go send_email(c.email_address, "bolt card payment", "html body", "text body")
 
 	return
 }

@@ -9,6 +9,13 @@ import (
 
 func lnurlw_callback(w http.ResponseWriter, req *http.Request) {
 
+        env_host_domain := os.Getenv("HOST_DOMAIN")
+        if req.Host != env_host_domain {
+                log.Warn("wrong host domain")
+                write_error(w)
+                return
+        }
+
 	url := req.URL.RequestURI()
 	log.WithFields(log.Fields{"url": url}).Debug("cb request")
 
@@ -123,33 +130,15 @@ func lnurlw_callback(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	payment_status, failure_reason, err := pay_invoice(param_pr)
-	if err != nil {
-		log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Warn(err)
-		write_error(w)
-		return
-	}
-
-	if failure_reason != "FAILURE_REASON_NONE" {
-		log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Info("payment failure reason : ", failure_reason)
-		write_error(w)
-	}
-
-	log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Info("payment status : ", payment_status)
-
-	// store result in database
-	err = db_update_payment_status(p.card_payment_id, payment_status, failure_reason)
-	if err != nil {
-		log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Warn(err)
-		write_error(w)
-		return
-	}
-
 	// https://github.com/fiatjaf/lnurl-rfc/blob/luds/03.md
 	//
 	// LN SERVICE sends a {"status": "OK"} or
 	// {"status": "ERROR", "reason": "error details..."}
 	//  JSON response and then attempts to pay the invoices asynchronously.
+
+	go pay_invoice(p.card_payment_id, param_pr)
+
+	log.Debug("sending 'status OK' response");
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
