@@ -205,8 +205,8 @@ func parse_request(req *http.Request) (int, error) {
 
 	// check if card is enabled
 
-	if c.enable_flag != "Y" {
-		return 0, errors.New("card enable is not set to Y")
+	if c.lnurlw_enable != "Y" {
+		return 0, errors.New("card lnurlw enable is not set to Y")
 	}
 
 	// check cmac

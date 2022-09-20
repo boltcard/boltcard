@@ -114,7 +114,7 @@ func monitor_invoice_state(r_hash []byte) () {
 
 	ln_port, err := strconv.Atoi(os.Getenv("LN_PORT"))
 	if err != nil {
-//TODO deal with err
+       	        log.Warn(err)
 		return
 	}
 
@@ -129,9 +129,12 @@ func monitor_invoice_state(r_hash []byte) () {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-//TODO deal with err
-	stream, _ := i_client.SubscribeSingleInvoice(ctx, &invoicesrpc.SubscribeSingleInvoiceRequest{
+	stream, err := i_client.SubscribeSingleInvoice(ctx, &invoicesrpc.SubscribeSingleInvoiceRequest{
 		RHash:       r_hash})
+	if err != nil {
+       	        log.WithFields(log.Fields{"r_hash": hex.EncodeToString(r_hash)}).Warn(err)
+		return
+	}
 
 	for {
 		update, err := stream.Recv()
@@ -141,7 +144,7 @@ func monitor_invoice_state(r_hash []byte) () {
 		}
 
 		if err != nil {
-//TODO deal with err
+	       	        log.WithFields(log.Fields{"r_hash": hex.EncodeToString(r_hash)}).Warn(err)
 			return
 		}
 
@@ -157,6 +160,29 @@ func monitor_invoice_state(r_hash []byte) () {
 	}
 
 	connection.Close()
+
+// send email
+
+	card_id, err := db_get_card_id_for_r_hash(hex.EncodeToString(r_hash))
+        if err != nil {
+                log.WithFields(log.Fields{"r_hash": hex.EncodeToString(r_hash)}).Warn(err)
+                return
+        }
+
+        log.WithFields(log.Fields{"r_hash": hex.EncodeToString(r_hash), "card_id": card_id}).Debug("card found")
+
+        c, err := db_get_card_from_card_id(card_id)
+        if err != nil {
+                log.WithFields(log.Fields{"r_hash": hex.EncodeToString(r_hash)}).Warn(err)
+                return
+        }
+
+	if c.email_enable != "Y" {
+		log.Debug("email is not enabled for the card")
+		return
+	}
+
+	go send_email(c.email_address, "bolt card receipt", "html body", "text body")
 
 	return
 }
@@ -230,6 +256,29 @@ func pay_invoice(card_payment_id int, invoice string) {
 	}
 
 	connection.Close()
+
+// send email
+
+	card_id, err := db_get_card_id_for_card_payment_id(card_payment_id)
+        if err != nil {
+                log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
+                return
+        }
+
+        log.WithFields(log.Fields{"card_payment_id": card_payment_id, "card_id": card_id}).Debug("card found")
+
+        c, err := db_get_card_from_card_id(card_id)
+        if err != nil {
+                log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
+                return
+        }
+
+	if c.email_enable != "Y" {
+		log.Debug("email is not enabled for the card")
+		return
+	}
+
+	go send_email(c.email_address, "bolt card payment", "html body", "text body")
 
 	return
 }

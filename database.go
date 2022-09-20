@@ -19,9 +19,12 @@ type Card struct {
 	db_uid                     string
 	last_counter_value         uint32
 	lnurlw_request_timeout_sec int
-	enable_flag                string
+	lnurlw_enable              string
 	tx_limit_sats              int
 	day_limit_sats             int
+	lnurlp_enable		string
+	email_address		string
+	email_enable		string
 	one_time_code              string
 	card_name                  string
 }
@@ -106,7 +109,7 @@ func db_get_card_count_for_uid(uid string) (int, error) {
 	return card_count, nil
 }
 
-func db_get_card_count_for_name_enabled(name string) (int, error) {
+func db_get_card_count_for_name_lnurlp(name string) (int, error) {
 
 	card_count := 0
 
@@ -116,7 +119,7 @@ func db_get_card_count_for_name_enabled(name string) (int, error) {
 	}
 	defer db.Close()
 
-	sqlStatement := `select count(card_id) from cards where card_name=$1 and enable_flag='Y';`
+	sqlStatement := `select count(card_id) from cards where card_name=$1 and lnurlp_enable='Y';`
 
 	row := db.QueryRow(sqlStatement, name)
 	err = row.Scan(&card_count)
@@ -140,6 +143,46 @@ func db_get_card_id_for_name(name string) (int, error) {
 	sqlStatement := `select card_id from cards where card_name=$1;`
 
 	row := db.QueryRow(sqlStatement, name)
+	err = row.Scan(&card_id)
+	if err != nil {
+		return 0, err
+	}
+
+	return card_id, nil
+}
+
+func db_get_card_id_for_card_payment_id(card_payment_id int) (int, error) {
+	card_id := 0
+
+	db, err := db_open()
+	if err != nil {
+		return 0, err
+	}
+	defer db.Close()
+
+	sqlStatement := `SELECT card_id FROM card_payments WHERE card_payment_id=$1;`
+
+	row := db.QueryRow(sqlStatement, card_payment_id)
+	err = row.Scan(&card_id)
+	if err != nil {
+		return 0, err
+	}
+
+	return card_id, nil
+}
+
+func db_get_card_id_for_r_hash(r_hash string) (int, error) {
+	card_id := 0
+
+	db, err := db_open()
+	if err != nil {
+		return 0, err
+	}
+	defer db.Close()
+
+	sqlStatement := `SELECT card_id FROM card_receipts WHERE r_hash_hex=$1;`
+
+	row := db.QueryRow(sqlStatement, r_hash)
 	err = row.Scan(&card_id)
 	if err != nil {
 		return 0, err
@@ -231,7 +274,7 @@ func db_get_card_from_uid(card_uid string) (*Card, error) {
 
 	sqlStatement := `SELECT card_id, k2_cmac_key, uid,` +
 		` last_counter_value, lnurlw_request_timeout_sec,` +
-		` enable_flag, tx_limit_sats, day_limit_sats` +
+		` lnurlw_enable, tx_limit_sats, day_limit_sats` +
 		` FROM cards WHERE uid=$1;`
 	row := db.QueryRow(sqlStatement, card_uid)
 	err = row.Scan(
@@ -240,7 +283,7 @@ func db_get_card_from_uid(card_uid string) (*Card, error) {
 		&c.db_uid,
 		&c.last_counter_value,
 		&c.lnurlw_request_timeout_sec,
-		&c.enable_flag,
+		&c.lnurlw_enable,
 		&c.tx_limit_sats,
 		&c.day_limit_sats)
 	if err != nil {
@@ -262,7 +305,7 @@ func db_get_card_from_card_id(card_id int) (*Card, error) {
 
 	sqlStatement := `SELECT card_id, k2_cmac_key, uid,` +
 		` last_counter_value, lnurlw_request_timeout_sec,` +
-		` enable_flag, tx_limit_sats, day_limit_sats` +
+		` lnurlw_enable, tx_limit_sats, day_limit_sats, email_enable, email_address` +
 		` FROM cards WHERE card_id=$1;`
 	row := db.QueryRow(sqlStatement, card_id)
 	err = row.Scan(
@@ -271,9 +314,11 @@ func db_get_card_from_card_id(card_id int) (*Card, error) {
 		&c.db_uid,
 		&c.last_counter_value,
 		&c.lnurlw_request_timeout_sec,
-		&c.enable_flag,
+		&c.lnurlw_enable,
 		&c.tx_limit_sats,
-		&c.day_limit_sats)
+		&c.day_limit_sats,
+		&c.email_enable,
+		&c.email_address)
 	if err != nil {
 		return &c, err
 	}
