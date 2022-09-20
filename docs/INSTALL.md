@@ -78,9 +78,22 @@ this should respond with 'bad request' and show up in the service log
 navigate to the service URL from a browser, for example `https://card.yourdomain.com/ln?2`  
 this should respond with 'bad request' and show up in the service log  
 #### bolt card
+`Environment="FUNCTION_LNURLW=ENABLE"`  
 [create a bolt card](CARD_ANDROID.md) with the URI pointing to this server  
 use a PoS setup to read the bolt card, e.g. [Breez wallet](https://breez.technology/)   
 monitor the service log to ensure decryption, authentication, payment rules and lightning payment work as expected  
+#### lightning address (optional)
+add lightning address support to receive funds to cards  
+`Environment="FUNCTION_LNURLP=ENABLE`  
+`cards.lnurlp_enable='Y'`  
+#### email notifications (optional)
+add email notifications for payments and fund receipt  
+`Environment="AWS_SES_ID=..."`  
+`Environment="AWS_SES_SECRET=..."`  
+`Environment="AWS_SES_EMAIL_FROM=..."`  
+`Environment="FUNCTION_EMAIL=ENABLE"`  
+`card.email_address='Y'`  
+`cards.email_enable='Y'`  
 #### production use
 ensure that LOG_LEVEL is set to PRODUCTION  
 ensure that all secrets are minimally available  
