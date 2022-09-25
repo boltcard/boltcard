@@ -9,12 +9,12 @@ import (
 
 func lnurlw_callback(w http.ResponseWriter, req *http.Request) {
 
-        env_host_domain := os.Getenv("HOST_DOMAIN")
-        if req.Host != env_host_domain {
-                log.Warn("wrong host domain")
-                write_error(w)
-                return
-        }
+	env_host_domain := os.Getenv("HOST_DOMAIN")
+	if req.Host != env_host_domain {
+		log.Warn("wrong host domain")
+		write_error(w)
+		return
+	}
 
 	url := req.URL.RequestURI()
 	log.WithFields(log.Fields{"url": url}).Debug("cb request")
@@ -120,6 +120,24 @@ func lnurlw_callback(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// check the card balance if marked as 'must stay above zero' (default)
+	//  i.e. cards.allow_negative_balance == 'N'
+
+	if c.allow_negative_balance != "Y" {
+		card_total, err := db_get_card_total_sats(p.card_id)
+		if err != nil {
+			log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Warn(err)
+			write_error(w)
+			return
+		}
+
+		if card_total-invoice_sats < 0 {
+			log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Warn("not enough balance")
+			write_error(w)
+			return
+		}
+	}
+
 	log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Info("paying invoice")
 
 	// update paid_flag so we only attempt payment once
@@ -138,7 +156,7 @@ func lnurlw_callback(w http.ResponseWriter, req *http.Request) {
 
 	go pay_invoice(p.card_payment_id, param_pr)
 
-	log.Debug("sending 'status OK' response");
+	log.Debug("sending 'status OK' response")
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

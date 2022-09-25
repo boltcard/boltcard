@@ -20,13 +20,19 @@ func send_balance_email(recipient_email string, card_id int) {
 		return
 	}
 
-        card_total_sats, err := db_get_card_total(card_id)
+	card_total_sats, err := db_get_card_total_sats(card_id)
 	if err != nil {
 		log.Warn(err.Error())
 		return
 	}
 
-	txs, err := db_get_card_txs(card_id)
+	email_max_txs, err := strconv.Atoi(os.Getenv("EMAIL_MAX_TXS"))
+	if err != nil {
+		log.Warn(err.Error())
+		return
+	}
+
+	txs, err := db_get_card_txs(card_id, email_max_txs+1)
 	if err != nil {
 		log.Warn(err.Error())
 		return
@@ -46,17 +52,26 @@ func send_balance_email(recipient_email string, card_id int) {
 	html_body_sb.WriteString("<h3>transactions</h3><table><tr><th>date</th><th>action</th><th>amount</th>")
 	text_body_sb.WriteString("transactions\n\n")
 
-	for _, tx := range txs {
+	for i, tx := range txs {
 
-    		html_body_sb.WriteString(
-			"<tr>" +
-			"<td>" + tx.tx_time + "</td>" +
-			"<td>" + tx.tx_type + "</td>" +
-			"<td style='text-align:right'>" + strconv.Itoa(tx.tx_amount_msats / 1000) + "</td>" +
-			"</tr>")
+		if i < email_max_txs {
+			html_body_sb.WriteString(
+				"<tr>" +
+					"<td>" + tx.tx_time + "</td>" +
+					"<td>" + tx.tx_type + "</td>" +
+					"<td style='text-align:right'>" + strconv.Itoa(tx.tx_amount_msats/1000) + "</td>" +
+					"</tr>")
+		} else {
+			html_body_sb.WriteString(
+				"<tr>" +
+					"<td style='text-align:center'> ... </td>" +
+					"<td style='text-align:center'> ... </td>" +
+					"<td style='text-align:center'> ... </td>" +
+					"</tr>")
+		}
 
 		text_body_sb.WriteString(tx.tx_type +
-			" " + strconv.Itoa(tx.tx_amount_msats / 1000))
+			" " + strconv.Itoa(tx.tx_amount_msats/1000))
 	}
 
 	html_body_sb.WriteString("</table></body></html>")
@@ -64,10 +79,10 @@ func send_balance_email(recipient_email string, card_id int) {
 	html_body := html_body_sb.String()
 	text_body := text_body_sb.String()
 
-        send_email(recipient_email,
+	send_email(recipient_email,
 		subject,
-                html_body,
-                text_body)
+		html_body,
+		text_body)
 }
 
 // https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/ses-example-send-email.html
