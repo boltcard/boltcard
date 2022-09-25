@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-type Card struct {
+type card struct {
 	card_id                    int
 	card_guid                  string
 	k0_auth_key                string
@@ -36,6 +36,14 @@ type payment struct {
 	paid_flag       string
 }
 
+type transaction struct {
+	card_id	int
+	tx_id int
+	tx_type string
+	tx_amount_msats int
+	tx_time string
+}
+
 func db_open() (*sql.DB, error) {
 
 	// get connection string from environment variables
@@ -55,9 +63,9 @@ func db_open() (*sql.DB, error) {
 	return db, nil
 }
 
-func db_get_new_card(one_time_code string) (*Card, error) {
+func db_get_new_card(one_time_code string) (*card, error) {
 
-	c := Card{}
+	c :=card{}
 
 	db, err := db_open()
 	if err != nil {
@@ -191,7 +199,7 @@ func db_get_card_id_for_r_hash(r_hash string) (int, error) {
 	return card_id, nil
 }
 
-func db_get_cards_blank_uid() ([]Card, error) {
+func db_get_cards_blank_uid() ([]card, error) {
 
 	// open the database
 
@@ -217,17 +225,17 @@ func db_get_cards_blank_uid() ([]Card, error) {
 
 	// prepare the results
 
-	var cards []Card
+	var cards []card
 
 	// Loop through rows, using Scan to assign column data to struct fields.
 	for rows.Next() {
-		var card Card
-		err := rows.Scan(&card.card_id, &card.k2_cmac_key)
+		var c card
+		err := rows.Scan(&c.card_id, &c.k2_cmac_key)
 
 		if err != nil {
 			return cards, err
 		}
-		cards = append(cards, card)
+		cards = append(cards, c)
 	}
 
 	err = rows.Err()
@@ -262,9 +270,9 @@ func db_update_card_uid_ctr(card_id int, uid string, ctr uint32) error {
 	return nil
 }
 
-func db_get_card_from_uid(card_uid string) (*Card, error) {
+func db_get_card_from_uid(card_uid string) (*card, error) {
 
-	c := Card{}
+	c := card{}
 
 	db, err := db_open()
 	if err != nil {
@@ -293,9 +301,9 @@ func db_get_card_from_uid(card_uid string) (*Card, error) {
 	return &c, nil
 }
 
-func db_get_card_from_card_id(card_id int) (*Card, error) {
+func db_get_card_from_card_id(card_id int) (*card, error) {
 
-	c := Card{}
+	c := card{}
 
 	db, err := db_open()
 	if err != nil {
@@ -583,4 +591,36 @@ func db_get_card_totals(card_id int) (int, error) {
 	day_total_sats := day_total_msats / 1000
 
 	return day_total_sats, nil
+}
+
+//TODO:
+//func db_get_card_txs(card_id int) ([]transaction, error) {
+
+func db_get_card_total(card_id int) (int, error) {
+
+	db, err := db_open()
+	if err != nil {
+		return 0, err
+	}
+
+	card_total_msats := 0
+
+	sqlStatement := `SELECT SUM(tx_amount_msats) FROM (SELECT card_id, ` +
+		`card_payments.card_payment_id AS tx_id, 'payment' AS tx_type, ` +
+		`-amount_msats as tx_amount_msats, payment_status_time AS tx_time ` +
+		`FROM card_payments WHERE card_id = $1 AND payment_status != 'FAILED' ` +
+		`AND amount_msats != 0 UNION SELECT card_id, card_receipts.card_receipt_id AS tx_id, ` +
+		`'receipt' AS tx_type, amount_msats as tx_amount_msats, ` +
+		`receipt_status_time AS tx_time FROM card_receipts WHERE card_id = $1 ` +
+		`AND receipt_status = 'SETTLED' ORDER BY tx_time) AS transactions;`
+
+	row := db.QueryRow(sqlStatement, card_id)
+	err = row.Scan(&card_total_msats)
+	if err != nil {
+		return 0, err
+	}
+
+	card_total_sats := card_total_msats / 1000
+
+	return card_total_sats, nil
 }

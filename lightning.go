@@ -182,7 +182,7 @@ func monitor_invoice_state(r_hash []byte) () {
 		return
 	}
 
-	go send_email(c.email_address, "bolt card receipt", "html body", "text body")
+	go send_balance_email(c.email_address, card_id)
 
 	return
 }
@@ -278,7 +278,7 @@ func pay_invoice(card_payment_id int, invoice string) {
 		return
 	}
 
-	go send_email(c.email_address, "bolt card payment", "html body", "text body")
+	go send_balance_email(c.email_address, card_id)
 
 	return
 }

@@ -8,7 +8,21 @@ import (
 	"github.com/aws/aws-sdk-go/service/ses"
 	log "github.com/sirupsen/logrus"
 	"os"
+	"strconv"
 )
+
+func send_balance_email(recipient_email string, card_id int) {
+        card_total_sats, err := db_get_card_total(card_id)
+	if err != nil {
+		log.Warn(err.Error())
+		return
+	}
+
+        send_email(recipient_email,
+                "bolt card balance: " + strconv.Itoa(card_total_sats) + " sats",
+                "html body",
+                "text body")
+}
 
 // https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/ses-example-send-email.html
 
