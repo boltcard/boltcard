@@ -2,8 +2,11 @@
 sudo systemctl stop postgresql
 sudo systemctl start postgresql
 
-echo This will delete all of the data in your database.
-echo Your card keys are part of this data.
+echo If you have previously created the database
+echo then this will delete it and recreate it.
+echo
+echo Key values for cards may be in the database data.
+echo
 echo Continue? "(y or n)"
 
 read x
