@@ -663,7 +663,7 @@ func db_get_card_total_sats(card_id int) (int, error) {
 
 	card_total_msats := 0
 
-	sqlStatement := `SELECT SUM(tx_amount_msats) FROM (SELECT card_id, ` +
+	sqlStatement := `SELECT COALESCE(SUM(tx_amount_msats),0) FROM (SELECT card_id, ` +
 		`card_payments.card_payment_id AS tx_id, 'payment' AS tx_type, ` +
 		`-amount_msats as tx_amount_msats, payment_status_time AS tx_time ` +
 		`FROM card_payments WHERE card_id = $1 AND payment_status != 'FAILED' ` +
