@@ -23,7 +23,21 @@ Here we describe how to create your own bolt cards with the Bolt Card service an
 
 ### Write the key values to the card
 on the bolt card server
-- ensure the environment variables for the database connection are set up (see `boltcard.service`)    
+- ensure the environment variables for the database connection are set up (see `boltcard.service`)   
+this can be achieved by writing these lines to the end of the `~/.bashrc` file  
+```
+echo "writing database_login to env vars"
+
+export DB_HOST=localhost
+export DB_PORT=5432
+export DB_USER=cardapp
+export DB_PASSWORD=database_password
+export DB_NAME=card_db
+
+echo "writing host_domain to env vars"
+
+export HOST_DOMAIN=card.yourdomain.com
+```
 - enter the `createboltcard` directory
 - `$ go build`
 - run the creation program
