@@ -90,7 +90,8 @@ $ lncli \
 --rpcserver=lightning-node.io:10009 \
 --macaroonpath=admin.macaroon \
 --tlscertpath="tls.cert" \
-bakemacaroon uri:/routerrpc.Router/SendPaymentV2 uri:/lnrpc.Lightning/AddInvoice uri:/invoicesrpc.Invoices/SubscribeSingleInvoiceRequest > SendAddMonitor.macaroon.hex
+bakemacaroon uri:/routerrpc.Router/SendPaymentV2 uri:/lnrpc.Lightning/AddInvoice \
+uri:/invoicesrpc.Invoices/SubscribeSingleInvoiceRequest > SendAddMonitor.macaroon.hex
 
 $ xxd -r -p SendAddMonitor.macaroon.hex SendAddMonitor.macaroon
 ```
