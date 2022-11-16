@@ -90,11 +90,11 @@ $ lncli \
 --rpcserver=lightning-node.io:10009 \
 --macaroonpath=admin.macaroon \
 --tlscertpath="tls.cert" \
-bakemacaroon uri:/routerrpc.Router/SendPaymentV2 uri:/lnrpc.Lightning/AddInvoice > SendAdd.macaroon.hex
+bakemacaroon uri:/routerrpc.Router/SendPaymentV2 uri:/lnrpc.Lightning/AddInvoice uri:/invoicesrpc.Invoices/SubscribeSingleInvoiceRequest > SendAddMonitor.macaroon.hex
 
-$ xxd -r -p SendAdd.macaroon.hex SendAdd.macaroon
+$ xxd -r -p SendAddMonitor.macaroon.hex SendAddMonitor.macaroon
 ```
-`Environment="LN_MACAROON_FILE=..."` update to point to new SendAdd.macaroon  
+`Environment="LN_MACAROON_FILE=..."` update to point to new SendAddMonitor.macaroon  
 `Environment="FUNCTION_LNURLP=ENABLE`  
 `cards.lnurlp_enable='Y'` in the database record  
 #### email notifications (optional)
