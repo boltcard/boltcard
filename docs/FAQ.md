@@ -19,8 +19,11 @@ It can be useful to test paying invoices directly from your lightning node.
 
 > Why do my payments take so long ?  
 
-
 This is due to the time taken for your payment lightning node to find a route.  
 It can be improved by opening channels using clearnet rather than on the tor network.  
 It may also help to improve your lightning node hardware or software setup.  
 It can be useful to test paying invoices directly from your lightning node.  
+
+> Can I use the same lightning node for the customer (bolt card) and the merchant (POS) ?
+
+When tested with LND in Nov 2022, the paying (customer, bolt card) lightning node must be a separate instance to the invoicing (merchant, POS) lightning node.
