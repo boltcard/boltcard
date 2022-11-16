@@ -84,6 +84,17 @@ use a PoS setup to read the bolt card, e.g. [Breez wallet](https://breez.technol
 monitor the service log to ensure decryption, authentication, payment rules and lightning payment work as expected  
 #### lightning address (optional)
 add lightning address support to receive funds to cards  
+create an updated macaroon with limited permissions to the lightning node
+```
+$ lncli \
+--rpcserver=lightning-node.io:10009 \
+--macaroonpath=admin.macaroon \
+--tlscertpath="tls.cert" \
+bakemacaroon uri:/routerrpc.Router/SendPaymentV2 uri:/lnrpc.Lightning/AddInvoice > SendAdd.macaroon.hex
+
+$ xxd -r -p SendAdd.macaroon.hex SendAdd.macaroon
+```
+`Environment="LN_MACAROON_FILE=..."` update to point to new SendAdd.macaroon  
 `Environment="FUNCTION_LNURLP=ENABLE`  
 `cards.lnurlp_enable='Y'` in the database record  
 #### email notifications (optional)
