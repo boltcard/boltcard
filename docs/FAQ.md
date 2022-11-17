@@ -14,7 +14,7 @@ This will give you a new 128 bit random key as a 32 character hex value.
 
 This is due to your payment lightning node not finding a route to the merchant lightning node.  
 It may help to open well funded channels to other well connected nodes.  
-It may also help to increase your maximum network fee in your service variables, **FEE_LIMIT_SAT** .  
+It may also help to increase your maximum network fee in your service variables, **FEE_LIMIT_SAT** / **FEE_LIMIT_PERCENT** .  
 It can be useful to test paying invoices directly from your lightning node.  
 
 > Why do my payments take so long ?  

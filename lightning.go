@@ -12,6 +12,7 @@ import (
 	"time"
 	"crypto/sha256"
 
+	decodepay "github.com/fiatjaf/ln-decodepay"
 	lnrpc "github.com/lightningnetwork/lnd/lnrpc"
 	invoicesrpc "github.com/lightningnetwork/lnd/lnrpc/invoicesrpc"
 	routerrpc "github.com/lightningnetwork/lnd/lnrpc/routerrpc"
@@ -214,6 +215,21 @@ func pay_invoice(card_payment_id int, invoice string) {
 	if err != nil {
        	        log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
 		return
+	}
+
+	fee_limit_percent_str := os.Getenv("FEE_LIMIT_PERCENT")
+	fee_limit_percent, err := strconv.ParseFloat(fee_limit_percent_str, 64)
+	if err != nil {
+		log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
+		return
+	}
+
+	bolt11, _ := decodepay.Decodepay(invoice)
+	invoice_msats := bolt11.MSatoshi
+
+	fee_limit_product := int64((fee_limit_percent / 100) * (float64(invoice_msats) / 1000))
+	if fee_limit_product > fee_limit_sat {
+		fee_limit_sat = fee_limit_product
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
