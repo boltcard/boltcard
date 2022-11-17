@@ -304,13 +304,52 @@ func lnurlw_response(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// check amount limits
+
+	max_withdrawable := max_withdraw_sats
+
+	c, err := db_get_card_from_card_id(card_id)
+	if err != nil {
+		log.Warn(err.Error())
+		write_error(w)
+		return
+	}
+
+	if c.tx_limit_sats < max_withdrawable {
+		max_withdrawable = c.tx_limit_sats
+	}
+
+	day_total_sats, err := db_get_card_totals(card_id)
+	if err != nil {
+		log.Warn(err.Error())
+		write_error(w)
+		return
+	}
+
+	if c.day_limit_sats-day_total_sats < max_withdrawable {
+		max_withdrawable = c.day_limit_sats - day_total_sats
+	}
+
+	if c.allow_negative_balance != "Y" {
+		card_total, err := db_get_card_total_sats(card_id)
+		if err != nil {
+			log.Warn(err.Error())
+			write_error(w)
+			return
+		}
+
+		if card_total < max_withdrawable {
+			max_withdrawable = card_total
+		}
+	}
+
 	response := Response{}
 	response.Tag = "withdrawRequest"
 	response.Callback = lnurlw_cb_url
 	response.LnurlwK1 = lnurlw_k1
 	response.DefaultDescription = "WWT withdrawal"
 	response.MinWithdrawable = min_withdraw_sats * 1000 // milliSats
-	response.MaxWithdrawable = max_withdraw_sats * 1000 // milliSats
+	response.MaxWithdrawable = max_withdrawable * 1000  // milliSats
 
 	jsonData, err := json.Marshal(response)
 
