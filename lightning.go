@@ -228,9 +228,6 @@ func pay_invoice(card_payment_id int, invoice string) {
 	invoice_msats := bolt11.MSatoshi
 
 	fee_limit_product := int64((fee_limit_percent / 100) * (float64(invoice_msats) / 1000))
-	if fee_limit_product > fee_limit_sat {
-		fee_limit_sat = fee_limit_product
-	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -239,7 +236,7 @@ func pay_invoice(card_payment_id int, invoice string) {
 		PaymentRequest:    invoice,
 		NoInflightUpdates: true,
 		TimeoutSeconds:    30,
-		FeeLimitSat:       fee_limit_sat})
+		FeeLimitSat:       fee_limit_sat + fee_limit_product})
 
 	if err != nil {
        	        log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)

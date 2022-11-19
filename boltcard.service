@@ -43,10 +43,9 @@ Environment="LN_PORT=10009"
 Environment="LN_TLS_FILE=/home/ubuntu/boltcard/tls.cert"
 Environment="LN_MACAROON_FILE=/home/ubuntu/boltcard/SendPaymentV2.macaroon"
 
-# The maximum lightning network fee to be paid in percent of the payment amount.
+# The maximum lightning network fee to be paid is the base FEE_LIMIT_SAT + the FEE_LIMIT_PERCENT of the amount.
+Environment="FEE_LIMIT_SAT=5"
 Environment="FEE_LIMIT_PERCENT=0.5"
-# Acceptable flat fee in sats that can exceed the percentage limit.
-Environment="FEE_LIMIT_SAT=10"
 
 # email
 # Environment="AWS_SES_ID="
