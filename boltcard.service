@@ -30,6 +30,10 @@ Environment="HOST_DOMAIN=card.yourdomain.com"
 Environment="HOST_PORT=9000"
 
 # MIN_WITHDRAW_SATS & MAX_WITHDRAW_SATS set the values for the lnurlw response
+#
+# as of Nov 2022 it is advisable to set MAX_WITHDRAW_SATS higher than the card tx limits
+# the Point Of Sale use will work as expected
+# the Gift Card use should try to withdraw MAX_WITHDRAW_SATS and fail on the card tx limit
 Environment="MIN_WITHDRAW_SATS=1"
 Environment="MAX_WITHDRAW_SATS=1000000"
 
