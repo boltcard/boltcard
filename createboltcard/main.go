@@ -66,14 +66,6 @@ func main() {
 		return
 	}
 
-	// remove any expired records
-
-	err = db_delete_expired()
-	if err != nil {
-		log.Warn(err.Error())
-		return
-	}
-
 	// show a QR code on the console for the URI + one_time_code
 
 	hostdomain := os.Getenv("HOST_DOMAIN")

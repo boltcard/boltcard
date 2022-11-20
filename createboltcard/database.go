@@ -27,25 +27,6 @@ func db_open() (*sql.DB, error) {
 	return db, nil
 }
 
-func db_delete_expired() error {
-
-	db, err := db_open()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	// delete expired one time code records
-
-	sqlStatement := `DELETE FROM cards WHERE one_time_code_expiry < NOW() AND one_time_code_used = 'N';`
-	_, err = db.Exec(sqlStatement)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func db_get_card_name_count(card_name string) (card_count int, err error) {
 
 	card_count = 0
