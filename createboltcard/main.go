@@ -24,23 +24,17 @@ func random_hex() string {
 
 func main() {
 
-	help_flag_ptr := flag.Bool("help", false, "show the command line options")
 	tx_max_ptr := flag.Int("tx_max", 0, "set the maximum satoshis per transaction")
-	day_max_ptr := flag.Int("day_max", 0, "set the maximum satoshis per day (24 hours)")
+	day_max_ptr := flag.Int("day_max", 0, "set the maximum satoshis per 24 hour day")
 	enable_flag_ptr := flag.Bool("enable", false, "enable the card for payments")
-	card_name_ptr := flag.String("name", "", "set a name for the card")
+	card_name_ptr := flag.String("name", "", "set a name for the card (must be set)")
 
 	flag.Parse()
 
-	// handle -help
-
-	if *help_flag_ptr == true {
+	if *card_name_ptr == "" {
 		flag.PrintDefaults()
 		return
 	}
-
-	fmt.Println()
-	fmt.Println("use './createboltcard -help' to show command line options")
 
 	// create the keys
 
@@ -76,7 +70,7 @@ func main() {
 	} else {
 		url = "https://" + hostdomain + "/new?a=" + one_time_code
 	}
-	
+
 	fmt.Println()
 	fmt.Println(url)
 	fmt.Println()
