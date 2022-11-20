@@ -36,6 +36,19 @@ func main() {
 		return
 	}
 
+	// check if card_name already exists
+
+	card_count, err := db_get_card_name_count(*card_name_ptr)
+	if err != nil {
+		log.Warn(err.Error())
+		return
+	}
+
+	if card_count > 0 {
+		fmt.Println("the card name already exists in the database")
+		return
+	}
+
 	// create the keys
 
 	one_time_code := random_hex()
@@ -46,7 +59,7 @@ func main() {
 
 	// create the new card record
 
-	err := db_insert_card(one_time_code, k0_auth_key, k2_cmac_key, k3, k4,
+	err = db_insert_card(one_time_code, k0_auth_key, k2_cmac_key, k3, k4,
 		*tx_max_ptr, *day_max_ptr, *enable_flag_ptr, *card_name_ptr)
 	if err != nil {
 		log.Warn(err.Error())
