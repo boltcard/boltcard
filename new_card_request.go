@@ -58,7 +58,7 @@ func new_card_request(w http.ResponseWriter, req *http.Request) {
 
 	if err == sql.ErrNoRows {
 		log.Debug(err)
-		write_error_message(w, "one time code was used or does not exist")
+		write_error_message(w, "one time code was used or card was wiped or card does not exist")
 		return
 	}
 

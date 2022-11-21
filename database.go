@@ -76,7 +76,7 @@ func db_get_new_card(one_time_code string) (*card, error) {
 
 	sqlStatement := `SELECT k0_auth_key, k2_cmac_key, k3, k4, card_name` +
 		` FROM cards WHERE one_time_code=$1 AND` +
-		` one_time_code_expiry > NOW() AND one_time_code_used = 'N';`
+		` one_time_code_expiry > NOW() AND one_time_code_used = 'N' AND wiped = 'N';`
 	row := db.QueryRow(sqlStatement, one_time_code)
 	err = row.Scan(
 		&c.k0_auth_key,

@@ -12,7 +12,7 @@ CREATE TABLE cards (
 	k2_cmac_key CHAR(32) NOT NULL,
 	k3 CHAR(32) NOT NULL,
 	k4 CHAR(32) NOT NULL,
-	uid CHAR(14) NOT NULL,
+	uid VARCHAR(14) NOT NULL DEFAULT '',
 	last_counter_value INTEGER NOT NULL,
 	lnurlw_request_timeout_sec INT NOT NULL,
 	lnurlw_enable CHAR(1) NOT NULL DEFAULT 'N',
@@ -26,6 +26,7 @@ CREATE TABLE cards (
 	one_time_code_expiry TIMESTAMPTZ DEFAULT NOW() + INTERVAL '1 DAY',
 	one_time_code_used CHAR(1) NOT NULL DEFAULT 'Y',
 	allow_negative_balance CHAR(1) NOT NULL DEFAULT 'N',
+	wiped CHAR(1) NOT NULL DEFAULT 'N',
 	PRIMARY KEY(card_id)
 );
 
