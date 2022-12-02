@@ -41,8 +41,8 @@ export HOST_DOMAIN=card.yourdomain.com
 - enter the `createboltcard` directory
 - `$ go build`
 - run the creation program
-  - `./createboltcard -help` to see options
-  - `./createboltcard -enable -tx_max=1000 -day_max=10000 -name=card_1` for example
+  - `./createboltcard` to see options
+  - `./createboltcard -enable -allow_neg_bal -tx_max=1000 -day_max=10000 -name=card_1` for example
 - this will give you a one-time link in text and QR code form
 
 on the app
