@@ -25,6 +25,7 @@ type card struct {
 	lnurlp_enable              string
 	email_address              string
 	email_enable               string
+	uid_privacy                string
 	one_time_code              string
 	card_name                  string
 	allow_negative_balance     string
@@ -74,7 +75,7 @@ func db_get_new_card(one_time_code string) (*card, error) {
 	}
 	defer db.Close()
 
-	sqlStatement := `SELECT k0_auth_key, k2_cmac_key, k3, k4, card_name` +
+	sqlStatement := `SELECT k0_auth_key, k2_cmac_key, k3, k4, card_name, uid_privacy` +
 		` FROM cards WHERE one_time_code=$1 AND` +
 		` one_time_code_expiry > NOW() AND one_time_code_used = 'N' AND wiped = 'N';`
 	row := db.QueryRow(sqlStatement, one_time_code)
@@ -83,7 +84,8 @@ func db_get_new_card(one_time_code string) (*card, error) {
 		&c.k2_cmac_key,
 		&c.k3,
 		&c.k4,
-		&c.card_name)
+		&c.card_name,
+		&c.uid_privacy)
 	if err != nil {
 		return &c, err
 	}

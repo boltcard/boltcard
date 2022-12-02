@@ -24,6 +24,7 @@ import (
  * @apiSuccess {String} k2 Key 2 - authentication key
  * @apiSuccess {String} k3 Key 3 - NXP documents say this must be set
  * @apiSuccess {String} k4 Key 4 - NXP documents say this must be set
+ * @apiSuccess {String} uid_privacy - set up the card for the UID to be private
  */
 
 type NewCardResponse struct {
@@ -36,6 +37,7 @@ type NewCardResponse struct {
 	K2               string `json:"k2"`
 	K3               string `json:"k3"`
 	K4               string `json:"k4"`
+	UID_PRIVACY	 string `json:"uid_privacy"`
 }
 
 func new_card_request(w http.ResponseWriter, req *http.Request) {
@@ -72,7 +74,7 @@ func new_card_request(w http.ResponseWriter, req *http.Request) {
 
 	response := NewCardResponse{}
 	response.PROTOCOL_NAME = "create_bolt_card_response"
-	response.PROTOCOL_VERSION = 1
+	response.PROTOCOL_VERSION = 2
 	response.CARD_NAME = c.card_name
 	response.LNURLW_BASE = lnurlw_base
 	response.K0 = c.k0_auth_key
@@ -80,6 +82,7 @@ func new_card_request(w http.ResponseWriter, req *http.Request) {
 	response.K2 = c.k2_cmac_key
 	response.K3 = c.k3
 	response.K4 = c.k4
+	response.UID_PRIVACY = c.uid_privacy
 
 	log.SetFormatter(&log.JSONFormatter{
 		DisableHTMLEscape: true,

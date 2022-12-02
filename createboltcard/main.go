@@ -28,6 +28,8 @@ func main() {
 	day_max_ptr := flag.Int("day_max", 0, "set the maximum satoshis per 24 hour day")
 	enable_flag_ptr := flag.Bool("enable", false, "enable the card for payments")
 	card_name_ptr := flag.String("name", "", "set a name for the card (must be set)")
+	uid_privacy_ptr := flag.Bool("uid_privacy", false, "select enhanced privacy for the card (cannot undo)")
+	allow_neg_bal_ptr := flag.Bool("allow_neg_bal", false, "allow the card to have a negative balance")
 
 	flag.Parse()
 
@@ -60,7 +62,8 @@ func main() {
 	// create the new card record
 
 	err = db_insert_card(one_time_code, k0_auth_key, k2_cmac_key, k3, k4,
-		*tx_max_ptr, *day_max_ptr, *enable_flag_ptr, *card_name_ptr)
+		*tx_max_ptr, *day_max_ptr, *enable_flag_ptr, *card_name_ptr,
+		*uid_privacy_ptr, *allow_neg_bal_ptr)
 	if err != nil {
 		log.Warn(err.Error())
 		return

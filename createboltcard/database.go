@@ -49,13 +49,17 @@ func db_get_card_name_count(card_name string) (card_count int, err error) {
 }
 
 func db_insert_card(one_time_code string, k0_auth_key string, k2_cmac_key string, k3 string, k4 string,
-	tx_max_sats int, day_max_sats int, lnurlw_enable bool, card_name string) error {
+	tx_max_sats int, day_max_sats int, lnurlw_enable bool, card_name string, uid_privacy bool,
+	allow_neg_bal_ptr bool) error {
 
 	lnurlw_enable_yn := "N"
+	if lnurlw_enable { lnurlw_enable_yn = "Y" }
 
-	if lnurlw_enable == true {
-		lnurlw_enable_yn = "Y"
-	}
+	uid_privacy_yn := "N"
+	if uid_privacy { uid_privacy_yn = "Y" }
+
+	allow_neg_bal_yn := "N"
+	if allow_neg_bal_ptr { allow_neg_bal_yn = "Y" }
 
 	db, err := db_open()
 	if err != nil {
@@ -68,10 +72,11 @@ func db_insert_card(one_time_code string, k0_auth_key string, k2_cmac_key string
 	sqlStatement := `INSERT INTO cards` +
 		` (one_time_code, k0_auth_key, k2_cmac_key, k3, k4, uid, last_counter_value,` +
 		` lnurlw_request_timeout_sec, tx_limit_sats, day_limit_sats, lnurlw_enable,` +
-		` one_time_code_used, card_name)` +
-		` VALUES ($1, $2, $3, $4, $5, '', 0, 60, $6, $7, $8, 'N', $9);`
+		` one_time_code_used, card_name, uid_privacy, allow_negative_balance)` +
+		` VALUES ($1, $2, $3, $4, $5, '', 0, 60, $6, $7, $8, 'N', $9, $10, $11);`
 	res, err := db.Exec(sqlStatement, one_time_code, k0_auth_key, k2_cmac_key, k3, k4,
-		tx_max_sats, day_max_sats, lnurlw_enable_yn, card_name)
+		tx_max_sats, day_max_sats, lnurlw_enable_yn, card_name, uid_privacy_yn,
+		allow_neg_bal_yn)
 	if err != nil {
 		return err
 	}

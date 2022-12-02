@@ -22,6 +22,7 @@ CREATE TABLE cards (
 	card_name VARCHAR(100) UNIQUE NOT NULL DEFAULT '',
 	email_address VARCHAR(100) DEFAULT '',
 	email_enable CHAR(1) NOT NULL DEFAULT 'N',
+	uid_privacy CHAR(1) NOT NULL DEFAULT 'N',
 	one_time_code CHAR(32) NOT NULL DEFAULT '',
 	one_time_code_expiry TIMESTAMPTZ DEFAULT NOW() + INTERVAL '1 DAY',
 	one_time_code_used CHAR(1) NOT NULL DEFAULT 'Y',
