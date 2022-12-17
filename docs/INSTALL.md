@@ -104,7 +104,7 @@ add email notifications for payments and fund receipt
 `Environment="AWS_SES_SECRET=..."`  
 `Environment="AWS_SES_EMAIL_FROM=..."`  
 `Environment="FUNCTION_EMAIL=ENABLE"`  
-`cards.email_address='Y'` 
+`cards.email_address='card.notifications@yourdomain.com'` 
 `cards.email_enable='Y'`
 #### production use
 ensure that LOG_LEVEL is set to PRODUCTION  
