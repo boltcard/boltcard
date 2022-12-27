@@ -98,14 +98,16 @@ $ xxd -r -p SendAddMonitor.macaroon.hex SendAddMonitor.macaroon
 `Environment="LN_MACAROON_FILE=..."` update to point to new SendAddMonitor.macaroon  
 `Environment="FUNCTION_LNURLP=ENABLE`  
 `cards.lnurlp_enable='Y'` in the database record  
+the lightning address will be *{cards.card_name}@{HOST_DOMAIN}*  
 #### email notifications (optional)
 add email notifications for payments and fund receipt  
 `Environment="AWS_SES_ID=..."`  
 `Environment="AWS_SES_SECRET=..."`  
 `Environment="AWS_SES_EMAIL_FROM=..."`  
 `Environment="FUNCTION_EMAIL=ENABLE"`  
-`cards.email_address='card.notifications@yourdomain.com'` 
-`cards.email_enable='Y'`
+`cards.email_address='card.notifications@yourdomain.com'`  
+`cards.email_enable='Y'`  
+the email address will be *{cards.email_address}@{HOST_DOMAIN}*  
 #### production use
 ensure that LOG_LEVEL is set to PRODUCTION  
 ensure that all secrets are minimally available  
