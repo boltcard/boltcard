@@ -43,7 +43,7 @@ func main() {
 // lnurlw for pos
 	router.Path("/ln").Methods("GET").HandlerFunc(lnurlw_response)
 	router.Path("/cb").Methods("GET").HandlerFunc(lnurlw_callback)
-// lnurlp for lightning address lnurlp
+// lnurlp for lightning address
 	router.Path("/.well-known/lnurlp/{name}").Methods("GET").HandlerFunc(lnurlp_response)
 	router.Path("/lnurlp/{name}").Methods("GET").HandlerFunc(lnurlp_callback)
 
