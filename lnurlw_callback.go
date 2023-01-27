@@ -4,7 +4,6 @@ import (
 	decodepay "github.com/fiatjaf/ln-decodepay"
 	log "github.com/sirupsen/logrus"
 	"net/http"
-	"os"
 )
 
 func lnurlw_callback(w http.ResponseWriter, req *http.Request) {

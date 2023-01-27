@@ -7,7 +7,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
 	log "github.com/sirupsen/logrus"
-	"os"
 	"strconv"
 	"strings"
 )

@@ -5,7 +5,6 @@ import (
 	"github.com/gorilla/mux"
 	"net/http"
 	"time"
-	"os"
 )
 
 var router = mux.NewRouter()

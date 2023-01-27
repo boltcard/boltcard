@@ -1,7 +1,6 @@
 package main
 
 import (
-	"os"
         log "github.com/sirupsen/logrus"
         "github.com/gorilla/mux"
         "net/http"

@@ -7,7 +7,6 @@ import (
 	"io"
 	"io/ioutil"
 	log "github.com/sirupsen/logrus"
-	"os"
 	"strconv"
 	"time"
 	"crypto/sha256"
