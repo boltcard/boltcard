@@ -10,7 +10,7 @@ import (
 )
 
 func lnurlp_callback(w http.ResponseWriter, r *http.Request) {
-        if os.Getenv("FUNCTION_LNURLP") != "ENABLE" {
+        if db_get_setting("FUNCTION_LNURLP") != "ENABLE" {
 		log.Debug("LNURLp function is not enabled")
                 return
         }
@@ -34,7 +34,7 @@ func lnurlp_callback(w http.ResponseWriter, r *http.Request) {
                         "req.Host": r.Host,
                 },).Info("lnurlp_callback")
 
-        domain := os.Getenv("HOST_DOMAIN")
+        domain := db_get_setting("HOST_DOMAIN")
         if r.Host != domain {
                 log.Warn("wrong host domain")
                 write_error(w)

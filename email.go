@@ -26,7 +26,7 @@ func send_balance_email(recipient_email string, card_id int) {
 		return
 	}
 
-	email_max_txs, err := strconv.Atoi(os.Getenv("EMAIL_MAX_TXS"))
+	email_max_txs, err := strconv.Atoi(db_get_setting("EMAIL_MAX_TXS"))
 	if err != nil {
 		log.Warn(err.Error())
 		return
@@ -89,9 +89,9 @@ func send_balance_email(recipient_email string, card_id int) {
 
 func send_email(recipient string, subject string, htmlBody string, textBody string) {
 
-	aws_ses_id := os.Getenv("AWS_SES_ID")
-	aws_ses_secret := os.Getenv("AWS_SES_SECRET")
-	sender := os.Getenv("AWS_SES_EMAIL_FROM")
+	aws_ses_id := db_get_setting("AWS_SES_ID")
+	aws_ses_secret := db_get_setting("AWS_SES_SECRET")
+	sender := db_get_setting("AWS_SES_EMAIL_FROM")
 
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String("us-east-1"),

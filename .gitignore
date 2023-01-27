@@ -16,9 +16,9 @@ createboltcard/createboltcard
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
-# secrets
+# possible secrets
 tls.cert
 *.macaroon*
-add_test_data.sql
 Caddyfile
 boltcard.service
+*.secret

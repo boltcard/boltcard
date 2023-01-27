@@ -91,7 +91,7 @@ func db_wipe_card(card_name string) (*card_wipe_info, error) {
 		return &card_wipe_info, err
 	}
 
-	card_wipe_info.k1 = os.Getenv("AES_DECRYPT_KEY")
+	card_wipe_info.k1 = db_get_setting("AES_DECRYPT_KEY")
 
 	return &card_wipe_info, nil
 }

@@ -9,7 +9,7 @@ import (
 
 func lnurlw_callback(w http.ResponseWriter, req *http.Request) {
 
-	env_host_domain := os.Getenv("HOST_DOMAIN")
+	env_host_domain := db_get_setting("HOST_DOMAIN")
 	if req.Host != env_host_domain {
 		log.Warn("wrong host domain")
 		write_error(w)
@@ -78,7 +78,7 @@ func lnurlw_callback(w http.ResponseWriter, req *http.Request) {
 	log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Debug("checking payment rules")
 
 	// check if we are only sending funds to a defined test node
-	testnode := os.Getenv("LN_TESTNODE")
+	testnode := db_get_setting("LN_TESTNODE")
 	if testnode != "" && bolt11.Payee != testnode {
 		log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Info("rejected as not the defined test node")
 		write_error(w)
