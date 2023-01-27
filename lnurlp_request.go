@@ -1,14 +1,13 @@
 package main
 
 import (
-	"os"
         log "github.com/sirupsen/logrus"
         "github.com/gorilla/mux"
         "net/http"
 )
 
 func lnurlp_response(w http.ResponseWriter, r *http.Request) {
-	if os.Getenv("FUNCTION_LNURLP") != "ENABLE" {
+	if db_get_setting("FUNCTION_LNURLP") != "ENABLE" {
 		log.Debug("LNURLp function is not enabled")
 		return
 	}
@@ -22,9 +21,9 @@ func lnurlp_response(w http.ResponseWriter, r *http.Request) {
                         "r.Host": r.Host,
                 },).Info("lnurlp_response")
 
-// look up domain in env vars (HOST_DOMAIN)
+// look up domain setting (HOST_DOMAIN)
 
-        domain := os.Getenv("HOST_DOMAIN")
+        domain := db_get_setting("HOST_DOMAIN")
         if r.Host != domain {
                 log.Warn("wrong host domain")
                 write_error(w)

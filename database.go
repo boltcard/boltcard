@@ -65,6 +65,27 @@ func db_open() (*sql.DB, error) {
 	return db, nil
 }
 
+func db_get_setting(setting_name string) (string) {
+
+	setting_value := ""
+
+	db, err := db_open()
+	if err != nil {
+		return ""
+	}
+	defer db.Close()
+
+	sqlStatement := `select value from settings where name=$1;`
+
+	row := db.QueryRow(sqlStatement, setting_name)
+	err = row.Scan(&setting_value)
+	if err != nil {
+		return ""
+	}
+
+	return setting_value
+}
+
 func db_get_new_card(one_time_code string) (*card, error) {
 
 	c := card{}

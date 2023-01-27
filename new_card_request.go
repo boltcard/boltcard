@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	log "github.com/sirupsen/logrus"
 	"net/http"
-	"os"
 )
 
 /**
@@ -70,7 +69,7 @@ func new_card_request(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	k1_decrypt_key := os.Getenv("AES_DECRYPT_KEY")
+	k1_decrypt_key := db_get_setting("AES_DECRYPT_KEY")
 
 	response := NewCardResponse{}
 	response.PROTOCOL_NAME = "create_bolt_card_response"

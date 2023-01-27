@@ -5,7 +5,6 @@ import (
 	"github.com/gorilla/mux"
 	"net/http"
 	"time"
-	"os"
 )
 
 var router = mux.NewRouter()
@@ -25,13 +24,17 @@ func write_error_message(w http.ResponseWriter, message string) {
 }
 
 func main() {
-	log_level := os.Getenv("LOG_LEVEL")
+	log_level := db_get_setting("LOG_LEVEL")
 
-	if log_level == "DEBUG" {
-		log.SetLevel(log.DebugLevel)
-		log.Info("bolt card service started - debug log level")
-	} else {
-		log.Info("bolt card service started - production log level")
+	switch log_level {
+		case "DEBUG":
+			log.SetLevel(log.DebugLevel)
+	                log.Info("bolt card service started - debug log level")
+		case "PRODUCTION":
+			log.Info("bolt card service started - production log level")
+		default:
+			// log.Fatal calls os.Exit(1) after logging the error
+			log.Fatal("error getting a valid LOG_LEVEL setting from the database")
 	}
 
 	log.SetFormatter(&log.JSONFormatter{
@@ -47,8 +50,8 @@ func main() {
 	router.Path("/.well-known/lnurlp/{name}").Methods("GET").HandlerFunc(lnurlp_response)
 	router.Path("/lnurlp/{name}").Methods("GET").HandlerFunc(lnurlp_callback)
 
-	port := os.Getenv("HOST_PORT")
-	if len(port) == 0 {
+	port := db_get_setting("HOST_PORT")
+	if port == "" {
 		port = "9000"
 	}
 

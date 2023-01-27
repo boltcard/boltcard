@@ -7,7 +7,6 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	qrcode "github.com/skip2/go-qrcode"
-	"os"
 	"strings"
 )
 
@@ -71,7 +70,7 @@ func main() {
 
 	// show a QR code on the console for the URI + one_time_code
 
-	hostdomain := os.Getenv("HOST_DOMAIN")
+	hostdomain := db_get_setting("HOST_DOMAIN")
 	url := ""
 	if strings.HasSuffix(hostdomain, ".onion") {
 		url = "http://" + hostdomain + "/new?a=" + one_time_code

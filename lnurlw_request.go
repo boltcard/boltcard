@@ -150,7 +150,7 @@ func parse_request(req *http.Request) (int, error) {
 
 	// decrypt p with aes_decrypt_key
 
-	aes_decrypt_key := os.Getenv("AES_DECRYPT_KEY")
+	aes_decrypt_key := db_get_setting("AES_DECRYPT_KEY")
 
 	key_sdm_file_read, err := hex.DecodeString(aes_decrypt_key)
 
@@ -246,7 +246,7 @@ func parse_request(req *http.Request) (int, error) {
 
 func lnurlw_response(w http.ResponseWriter, req *http.Request) {
 
-	env_host_domain := os.Getenv("HOST_DOMAIN")
+	env_host_domain := db_get_setting("HOST_DOMAIN")
 	if req.Host != env_host_domain {
 		log.Warn("wrong host domain")
 		write_error(w)
@@ -286,7 +286,7 @@ func lnurlw_response(w http.ResponseWriter, req *http.Request) {
 		lnurlw_cb_url = "https://" + req.Host + "/cb"
 	}
 
-	min_withdraw_sats_str := os.Getenv("MIN_WITHDRAW_SATS")
+	min_withdraw_sats_str := db_get_setting("MIN_WITHDRAW_SATS")
 	min_withdraw_sats, err := strconv.Atoi(min_withdraw_sats_str)
 
 	if err != nil {
@@ -295,7 +295,7 @@ func lnurlw_response(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	max_withdraw_sats_str := os.Getenv("MAX_WITHDRAW_SATS")
+	max_withdraw_sats_str := db_get_setting("MAX_WITHDRAW_SATS")
 	max_withdraw_sats, err := strconv.Atoi(max_withdraw_sats_str)
 
 	if err != nil {

@@ -10,56 +10,12 @@ Restart=always
 RestartSec=10
 User=ubuntu
 
-# boltcard service settings
-
-# LOG_LEVEL is DEBUG or PRODUCTION
-Environment="LOG_LEVEL=DEBUG"
-
-# AES_DECRYPT_KEY is the hex value of the server decrypt key for hosted bolt cards
-Environment="AES_DECRYPT_KEY=00000000000000000000000000000000"
-
-# DB_ values are for the postgres database connection
+# postgres database connection settings
 Environment="DB_HOST=localhost"
 Environment="DB_PORT=5432"
 Environment="DB_USER=cardapp"
 Environment="DB_PASSWORD=database_password"
 Environment="DB_NAME=card_db"
-
-# HOST_ values are for https calls
-Environment="HOST_DOMAIN=card.yourdomain.com"
-Environment="HOST_PORT=9000"
-
-# MIN_WITHDRAW_SATS & MAX_WITHDRAW_SATS set the values for the lnurlw response
-#
-# as of Nov 2022 it is advisable to set MAX_WITHDRAW_SATS higher than the card tx limits
-# the Point Of Sale use will work as expected
-# the Gift Card use should try to withdraw MAX_WITHDRAW_SATS and fail on the card tx limit
-Environment="MIN_WITHDRAW_SATS=1"
-Environment="MAX_WITHDRAW_SATS=1000000"
-
-# LN_ values are for the lightning server used for making payments
-Environment="LN_HOST=ln.host.io"
-Environment="LN_PORT=10009"
-Environment="LN_TLS_FILE=/home/ubuntu/boltcard/tls.cert"
-Environment="LN_MACAROON_FILE=/home/ubuntu/boltcard/SendPaymentV2.macaroon"
-
-# The maximum lightning network fee to be paid is the base FEE_LIMIT_SAT + the FEE_LIMIT_PERCENT of the amount.
-Environment="FEE_LIMIT_SAT=5"
-Environment="FEE_LIMIT_PERCENT=0.5"
-
-# email
-# Environment="AWS_SES_ID="
-# Environment="AWS_SES_SECRET="
-# Environment="AWS_SES_EMAIL_FROM="
-# Environment="EMAIL_MAX_TXS=10"
-
-# LN_TESTNODE may be used in testing and will then only pay to the defined test node pubkey
-#Environment="LN_TESTNODE=000000000000000000000000000000000000000000000000000000000000000000"
-
-# set which functions are available on the server
-Environment="FUNCTION_LNURLW=ENABLE"
-#Environment="FUNCTION_LNURLP=ENABLE"
-#Environment="FUNCTION_EMAIL=ENABLE"
 
 ExecStart=/bin/bash /home/ubuntu/boltcard/s_launch
 
