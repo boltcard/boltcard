@@ -1,5 +1,7 @@
 \c card_db;
 
+DELETE FROM settings;
+
 INSERT INTO settings (name, value) VALUES ('LOG_LEVEL', '');
 INSERT INTO settings (name, value) VALUES ('AES_DECRYPT_KEY', '');
 INSERT INTO settings (name, value) VALUES ('HOST_DOMAIN', '');
@@ -15,4 +17,7 @@ INSERT INTO settings (name, value) VALUES ('LN_TESTNODE', '');
 INSERT INTO settings (name, value) VALUES ('FUNCTION_LNURLW', '');
 INSERT INTO settings (name, value) VALUES ('FUNCTION_LNURLP', '');
 INSERT INTO settings (name, value) VALUES ('FUNCTION_EMAIL', '');
-
+INSERT INTO settings (name, value) VALUES ('AWS_SES_ID', '');
+INSERT INTO settings (name, value) VALUES ('AWS_SES_SECRET', '');
+INSERT INTO settings (name, value) VALUES ('AWS_SES_EMAIL_FROM', '');
+INSERT INTO settings (name, value) VALUES ('EMAIL_MAX_TXS', '');
