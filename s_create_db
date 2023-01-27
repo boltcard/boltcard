@@ -13,6 +13,7 @@ read x
 
 if [ "$x" = "y" ]; then
 	psql postgres -f create_db.sql
+	psql postgres -f insert_settings.sql
 	echo Database created
 else
 	echo No action

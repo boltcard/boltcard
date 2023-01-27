@@ -6,6 +6,13 @@ CREATE USER cardapp WITH PASSWORD 'database_password';
 
 \c card_db;
 
+CREATE TABLE settings (
+	setting_id INT GENERATED ALWAYS AS IDENTITY,
+	name VARCHAR(30) UNIQUE NOT NULL DEFAULT '',
+	value VARCHAR(128) NOT NULL DEFAULT '',
+	PRIMARY KEY(setting_id)
+);
+
 CREATE TABLE cards (
 	card_id INT GENERATED ALWAYS AS IDENTITY,
 	k0_auth_key CHAR(32) NOT NULL,
@@ -55,10 +62,12 @@ CREATE TABLE card_receipts (
 	amount_msats BIGINT CHECK (amount_msats > 0),
 	receipt_status VARCHAR(100) NOT NULL DEFAULT '',
 	receipt_status_time TIMESTAMPTZ,
+	PRIMARY KEY(card_receipt_id),
 	CONSTRAINT fk_card FOREIGN KEY(card_id) REFERENCES cards(card_id)
 );
 
 
+GRANT ALL PRIVILEGES ON TABLE settings TO cardapp;
 GRANT ALL PRIVILEGES ON TABLE cards TO cardapp;
 GRANT ALL PRIVILEGES ON TABLE card_payments TO cardapp;
 GRANT ALL PRIVILEGES ON TABLE card_receipts TO cardapp;
