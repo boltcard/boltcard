@@ -43,7 +43,8 @@ $ xxd -r -p SendPaymentV2.macaroon.hex SendPaymentV2.macaroon
 ```
 
 ### setup the boltcard server
-edit `boltcard.service` in the section named `boltcard service settings`  
+edit `boltcard.service` to set up the database connection  
+edit `insert_settings.sql` to set up [bolt card system settings](SETTINGS.md)  
 edit `Caddyfile` to set the boltcard domain name  
 
 ### database creation
@@ -95,23 +96,23 @@ uri:/invoicesrpc.Invoices/SubscribeSingleInvoice > SendAddMonitor.macaroon.hex
 
 $ xxd -r -p SendAddMonitor.macaroon.hex SendAddMonitor.macaroon
 ```
-`Environment="LN_MACAROON_FILE=..."` update to point to new SendAddMonitor.macaroon  
-`Environment="FUNCTION_LNURLP=ENABLE`  
-`cards.lnurlp_enable='Y'` in the database record  
+`LN_MACAROON_FILE=...` (settings table) - update to point to new SendAddMonitor.macaroon  
+`FUNCTION_LNURLP=ENABLE` (settings table)  
+`cards.lnurlp_enable='Y'` (card record)  
   
 the lightning address will be *{cards.card_name}@{HOST_DOMAIN}*  
 #### email notifications (optional)
 add email notifications for payments and fund receipt  
-`Environment="AWS_SES_ID=..."`  
-`Environment="AWS_SES_SECRET=..."`  
-`Environment="AWS_SES_EMAIL_FROM=..."`  
-`Environment="FUNCTION_EMAIL=ENABLE"`  
+`AWS_SES_ID=..."` (settings table)  
+`AWS_SES_SECRET=..."` (settings table)  
+`AWS_SES_EMAIL_FROM=..."` (settings table)  
+`FUNCTION_EMAIL=ENABLE"` (settings table)  
 `cards.email_address='card.notifications@yourdomain.com'`  
 `cards.email_enable='Y'`  
   
 the email address will be *{cards.email_address}@{HOST_DOMAIN}*  
 #### production use
-ensure that LOG_LEVEL is set to PRODUCTION  
+ensure that LOG_LEVEL is set to PRODUCTION (settings table)  
 ensure that all secrets are minimally available  
 ensure that you have good operational security practices  
 monitor the system for unusual activity  
