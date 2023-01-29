@@ -63,7 +63,7 @@ func getGrpcConn(hostname string, port int, tlsFile, macaroonFile string) *grpc.
 		grpc.WithPerRPCCredentials(newCreds(macaroonBytes)),
 	}...)
 	if err != nil {
-		log.Printf("unable to connect to %s: %w", fullHostname, err)
+		log.Printf("unable to connect to %s", fullHostname)
 		panic(err)
 	}
 
