@@ -2,14 +2,14 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
-	log "github.com/sirupsen/logrus"
 	"strconv"
 	"time"
-	"crypto/sha256"
 
 	decodepay "github.com/fiatjaf/ln-decodepay"
 	lnrpc "github.com/lightningnetwork/lnd/lnrpc"
@@ -92,9 +92,9 @@ func add_invoice(amount_sat int64, metadata string) (payment_request string, r_h
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	result, err := l_client.AddInvoice(ctx, &lnrpc.Invoice {
-		Value:			amount_sat,
-		DescriptionHash:	dh[:],
+	result, err := l_client.AddInvoice(ctx, &lnrpc.Invoice{
+		Value:           amount_sat,
+		DescriptionHash: dh[:],
 	})
 
 	if err != nil {
@@ -106,7 +106,7 @@ func add_invoice(amount_sat int64, metadata string) (payment_request string, r_h
 
 // https://api.lightning.community/?shell#subscribesingleinvoice
 
-func monitor_invoice_state(r_hash []byte) () {
+func monitor_invoice_state(r_hash []byte) {
 
 	// SubscribeSingleInvoice
 
@@ -114,7 +114,7 @@ func monitor_invoice_state(r_hash []byte) () {
 
 	ln_port, err := strconv.Atoi(db_get_setting("LN_PORT"))
 	if err != nil {
-       	        log.Warn(err)
+		log.Warn(err)
 		return
 	}
 
@@ -130,9 +130,9 @@ func monitor_invoice_state(r_hash []byte) () {
 	defer cancel()
 
 	stream, err := i_client.SubscribeSingleInvoice(ctx, &invoicesrpc.SubscribeSingleInvoiceRequest{
-		RHash:       r_hash})
+		RHash: r_hash})
 	if err != nil {
-       	        log.WithFields(log.Fields{"r_hash": hex.EncodeToString(r_hash)}).Warn(err)
+		log.WithFields(log.Fields{"r_hash": hex.EncodeToString(r_hash)}).Warn(err)
 		return
 	}
 
@@ -144,38 +144,38 @@ func monitor_invoice_state(r_hash []byte) () {
 		}
 
 		if err != nil {
-	       	        log.WithFields(log.Fields{"r_hash": hex.EncodeToString(r_hash)}).Warn(err)
+			log.WithFields(log.Fields{"r_hash": hex.EncodeToString(r_hash)}).Warn(err)
 			return
 		}
 
 		invoice_state := lnrpc.Invoice_InvoiceState_name[int32(update.State)]
 
-        log.WithFields(
-                log.Fields{
-                        "r_hash": hex.EncodeToString(r_hash),
-                        "invoice_state": invoice_state,
-                },).Info("invoice state updated")
+		log.WithFields(
+			log.Fields{
+				"r_hash":        hex.EncodeToString(r_hash),
+				"invoice_state": invoice_state,
+			}).Info("invoice state updated")
 
 		db_update_receipt_state(hex.EncodeToString(r_hash), invoice_state)
 	}
 
 	connection.Close()
 
-// send email
+	// send email
 
 	card_id, err := db_get_card_id_for_r_hash(hex.EncodeToString(r_hash))
-        if err != nil {
-                log.WithFields(log.Fields{"r_hash": hex.EncodeToString(r_hash)}).Warn(err)
-                return
-        }
+	if err != nil {
+		log.WithFields(log.Fields{"r_hash": hex.EncodeToString(r_hash)}).Warn(err)
+		return
+	}
 
-        log.WithFields(log.Fields{"r_hash": hex.EncodeToString(r_hash), "card_id": card_id}).Debug("card found")
+	log.WithFields(log.Fields{"r_hash": hex.EncodeToString(r_hash), "card_id": card_id}).Debug("card found")
 
-        c, err := db_get_card_from_card_id(card_id)
-        if err != nil {
-                log.WithFields(log.Fields{"r_hash": hex.EncodeToString(r_hash)}).Warn(err)
-                return
-        }
+	c, err := db_get_card_from_card_id(card_id)
+	if err != nil {
+		log.WithFields(log.Fields{"r_hash": hex.EncodeToString(r_hash)}).Warn(err)
+		return
+	}
 
 	if c.email_enable != "Y" {
 		log.Debug("email is not enabled for the card")
@@ -197,7 +197,7 @@ func pay_invoice(card_payment_id int, invoice string) {
 
 	ln_port, err := strconv.Atoi(db_get_setting("LN_PORT"))
 	if err != nil {
-       	        log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
+		log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
 		return
 	}
 
@@ -212,7 +212,7 @@ func pay_invoice(card_payment_id int, invoice string) {
 	fee_limit_sat_str := db_get_setting("FEE_LIMIT_SAT")
 	fee_limit_sat, err := strconv.ParseInt(fee_limit_sat_str, 10, 64)
 	if err != nil {
-       	        log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
+		log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
 		return
 	}
 
@@ -238,7 +238,7 @@ func pay_invoice(card_payment_id int, invoice string) {
 		FeeLimitSat:       fee_limit_sat + fee_limit_product})
 
 	if err != nil {
-       	        log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
+		log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
 		return
 	}
 
@@ -250,40 +250,40 @@ func pay_invoice(card_payment_id int, invoice string) {
 		}
 
 		if err != nil {
-        	        log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
+			log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
 			return
 		}
 
 		payment_status := lnrpc.Payment_PaymentStatus_name[int32(update.Status)]
 		failure_reason := lnrpc.PaymentFailureReason_name[int32(update.FailureReason)]
 
-	        log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Info("payment failure reason : ", failure_reason)
-        	log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Info("payment status : ", payment_status)
+		log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Info("payment failure reason : ", failure_reason)
+		log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Info("payment status : ", payment_status)
 
-        	err = db_update_payment_status(card_payment_id, payment_status, failure_reason)
-	        if err != nil {
-        	        log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
-                	return
-        	}
+		err = db_update_payment_status(card_payment_id, payment_status, failure_reason)
+		if err != nil {
+			log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
+			return
+		}
 	}
 
 	connection.Close()
 
-// send email
+	// send email
 
 	card_id, err := db_get_card_id_for_card_payment_id(card_payment_id)
-        if err != nil {
-                log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
-                return
-        }
+	if err != nil {
+		log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
+		return
+	}
 
-        log.WithFields(log.Fields{"card_payment_id": card_payment_id, "card_id": card_id}).Debug("card found")
+	log.WithFields(log.Fields{"card_payment_id": card_payment_id, "card_id": card_id}).Debug("card found")
 
-        c, err := db_get_card_from_card_id(card_id)
-        if err != nil {
-                log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
-                return
-        }
+	c, err := db_get_card_from_card_id(card_id)
+	if err != nil {
+		log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
+		return
+	}
 
 	if c.email_enable != "Y" {
 		log.Debug("email is not enabled for the card")

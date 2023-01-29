@@ -27,25 +27,25 @@ func db_open() (*sql.DB, error) {
 	return db, nil
 }
 
-func db_get_setting(setting_name string) (string) {
+func db_get_setting(setting_name string) string {
 
-        setting_value := ""
+	setting_value := ""
 
-        db, err := db_open()
-        if err != nil {
-                return ""
-        }
-        defer db.Close()
+	db, err := db_open()
+	if err != nil {
+		return ""
+	}
+	defer db.Close()
 
-        sqlStatement := `select value from settings where name=$1;`
+	sqlStatement := `select value from settings where name=$1;`
 
-        row := db.QueryRow(sqlStatement, setting_name)
-        err = row.Scan(&setting_value)
-        if err != nil {
-                return ""
-        }
+	row := db.QueryRow(sqlStatement, setting_name)
+	err = row.Scan(&setting_value)
+	if err != nil {
+		return ""
+	}
 
-        return setting_value
+	return setting_value
 }
 
 func db_get_card_name_count(card_name string) (card_count int, err error) {
@@ -74,13 +74,19 @@ func db_insert_card(one_time_code string, k0_auth_key string, k2_cmac_key string
 	allow_neg_bal_ptr bool) error {
 
 	lnurlw_enable_yn := "N"
-	if lnurlw_enable { lnurlw_enable_yn = "Y" }
+	if lnurlw_enable {
+		lnurlw_enable_yn = "Y"
+	}
 
 	uid_privacy_yn := "N"
-	if uid_privacy { uid_privacy_yn = "Y" }
+	if uid_privacy {
+		uid_privacy_yn = "Y"
+	}
 
 	allow_neg_bal_yn := "N"
-	if allow_neg_bal_ptr { allow_neg_bal_yn = "Y" }
+	if allow_neg_bal_ptr {
+		allow_neg_bal_yn = "Y"
+	}
 
 	db, err := db_open()
 	if err != nil {

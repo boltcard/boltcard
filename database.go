@@ -65,7 +65,7 @@ func db_open() (*sql.DB, error) {
 	return db, nil
 }
 
-func db_get_setting(setting_name string) (string) {
+func db_get_setting(setting_name string) string {
 
 	setting_value := ""
 

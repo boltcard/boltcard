@@ -36,7 +36,7 @@ type NewCardResponse struct {
 	K2               string `json:"k2"`
 	K3               string `json:"k3"`
 	K4               string `json:"k4"`
-	UID_PRIVACY	 string `json:"uid_privacy"`
+	UID_PRIVACY      string `json:"uid_privacy"`
 }
 
 func new_card_request(w http.ResponseWriter, req *http.Request) {

@@ -27,46 +27,46 @@ func db_open() (*sql.DB, error) {
 	return db, nil
 }
 
-func db_get_setting(setting_name string) (string) {
+func db_get_setting(setting_name string) string {
 
-        setting_value := ""
+	setting_value := ""
 
-        db, err := db_open()
-        if err != nil {
-                return ""
-        }
-        defer db.Close()
+	db, err := db_open()
+	if err != nil {
+		return ""
+	}
+	defer db.Close()
 
-        sqlStatement := `select value from settings where name=$1;`
+	sqlStatement := `select value from settings where name=$1;`
 
-        row := db.QueryRow(sqlStatement, setting_name)
-        err = row.Scan(&setting_value)
-        if err != nil {
-                return ""
-        }
+	row := db.QueryRow(sqlStatement, setting_name)
+	err = row.Scan(&setting_value)
+	if err != nil {
+		return ""
+	}
 
-        return setting_value
+	return setting_value
 }
 
 func db_get_card_name_count(card_name string) (card_count int, err error) {
 
-        card_count = 0
+	card_count = 0
 
-        db, err := db_open()
-        if err != nil {
-                return 0, err
-        }
-        defer db.Close()
+	db, err := db_open()
+	if err != nil {
+		return 0, err
+	}
+	defer db.Close()
 
-        sqlStatement := `SELECT COUNT(card_id) FROM cards WHERE card_name = $1;`
+	sqlStatement := `SELECT COUNT(card_id) FROM cards WHERE card_name = $1;`
 
-        row := db.QueryRow(sqlStatement, card_name)
-        err = row.Scan(&card_count)
-        if err != nil {
-                return 0, err
-        }
+	row := db.QueryRow(sqlStatement, card_name)
+	err = row.Scan(&card_count)
+	if err != nil {
+		return 0, err
+	}
 
-        return card_count, nil
+	return card_count, nil
 }
 
 func db_wipe_card(card_name string) (*card_wipe_info, error) {
