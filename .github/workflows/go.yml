@@ -25,7 +25,7 @@ jobs:
     - name: Check formatting
       uses: Jerome1337/gofmt-action@v1.0.5
       with:
-        gofmt-path: './...'
+        gofmt-path: '.'
         gofmt-flags: '-l -d'
 
     - name: Build
