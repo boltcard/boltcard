@@ -1,0 +1,60 @@
+version: '3'
+services:
+  boltcard:
+    build: 
+      context: ./
+      dockerfile: Dockerfile
+    container_name: boltcard_main
+    depends_on:
+      - db
+    restart: unless-stopped
+    environment:
+      - LOG_LEVEL=DEBUG
+      - DB_HOST=db
+      - DB_USER=${DB_USER}      
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_PORT=5432    
+      - DB_NAME=${DB_NAME}
+    ports: 
+      - 9000:9000
+    volumes:
+      - ${PWD}/tls.cert:/boltcard/tls.cert
+      - ${PWD}/SendPaymentV2.macaroon:/boltcard/SendPaymentV2.macaroon
+    networks:
+      - boltnet
+  db:
+    image: postgres
+    container_name: boltcard_db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./select_db.sql:/docker-entrypoint-initdb.d/select_db.sql
+      - ./create_db.sql:/docker-entrypoint-initdb.d/create_db.sql
+      - ./settings.sql:/docker-entrypoint-initdb.d/settings.sql
+    ports:
+      - 5432:5432
+    networks:
+      - boltnet
+  webserver:
+    image: caddy
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ${PWD}/Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+networks:
+  boltnet:
+volumes:
+  db-data:
+  caddy_data:
+    external: true
+  caddy_config:
