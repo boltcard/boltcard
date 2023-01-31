@@ -2,8 +2,10 @@
 
 ### install Docker engine and Docker compose
 
-[Docker engine download & install](https://docs.docker.com/engine/install/)
-[Docker compose download & install](https://docs.docker.com/compose/install/)
+- [Docker engine download &
+   install](https://docs.docker.com/engine/install/)
+- [Docker compose download &
+   install](https://docs.docker.com/compose/install/)
 
 ### Set up the boltcard server
 edit `.env` to set up the database connection
