@@ -1,0 +1,2 @@
+https://card.yourdomain.com
+reverse_proxy boltcard_main:9000
