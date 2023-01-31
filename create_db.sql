@@ -1,9 +1,3 @@
-DROP DATABASE IF EXISTS card_db;
-CREATE DATABASE card_db;
-
-DROP USER IF EXISTS cardapp;
-CREATE USER cardapp WITH PASSWORD 'database_password';
-
 \c card_db;
 
 CREATE TABLE settings (
