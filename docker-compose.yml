@@ -51,6 +51,8 @@ services:
       - ${PWD}/Caddyfile_docker:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
+    networks:
+      - boltnet
 networks:
   boltnet:
 volumes:
