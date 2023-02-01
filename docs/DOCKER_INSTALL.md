@@ -21,7 +21,7 @@ set up the server hosting firewall to allow open access to https (port 443) only
 
 ### service bring-up and running
 ```
-$ docker volumes create caddy_data
+$ docker volume create caddy_data
 // add -d for detached mode
 $ docker-compose up -d
 ```
