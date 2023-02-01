@@ -17,9 +17,6 @@ services:
       - DB_NAME=card_db
     ports: 
       - 9000:9000
-    volumes:
-      - ${PWD}/tls.cert:/boltcard
-      - ${PWD}/admin.macaroon:/boltcard
     networks:
       - boltnet
   db:
