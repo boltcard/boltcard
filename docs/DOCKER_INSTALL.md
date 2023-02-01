@@ -8,10 +8,10 @@
    install](https://docs.docker.com/compose/install/)
 
 ### Set up the boltcard server
-edit `.env` to set up the database connection
-edit `settings.sql` to set up [bolt card system settings](SETTINGS.md)
-- Put the `tls.cert` file and `admin.macaroon` files in the project root directory and in the settings.sql, set the paths to the files to `/boltcard/tls.cert` and `/boltcard/admin.macaroon`
-edit `Caddyfile` to set the boltcard domain name
+- edit `.env` to set up the database connection
+- edit `settings.sql` to set up [bolt card system settings](SETTINGS.md)
+   - Put the `tls.cert` file and `admin.macaroon` files in the project root directory and in the settings.sql, set the paths to the files to `/boltcard/tls.cert` and `/boltcard/admin.macaroon`
+- edit `Caddyfile` to set the boltcard domain name
 
 ### https setup
 
