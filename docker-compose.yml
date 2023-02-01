@@ -19,7 +19,7 @@ services:
       - 9000:9000
     volumes:
       - ${PWD}/tls.cert:/boltcard/tls.cert
-      - ${PWD}/SendPaymentV2.macaroon:/boltcard/SendPaymentV2.macaroon
+      - ${PWD}/boltcard.macaroon:/boltcard/boltcard.macaroon
     networks:
       - boltnet
   db:
