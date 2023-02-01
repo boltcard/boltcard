@@ -18,8 +18,8 @@ services:
     ports: 
       - 9000:9000
     volumes:
-      - ${PWD}/tls.cert:/boltcard/tls.cert
-      - ${PWD}/boltcard.macaroon:/boltcard/boltcard.macaroon
+      - ${PWD}/tls.cert:/boltcard
+      - ${PWD}/admin.macaroon:/boltcard
     networks:
       - boltnet
   db:
