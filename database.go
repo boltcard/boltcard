@@ -130,7 +130,7 @@ func db_get_card_count_for_uid(uid string) (int, error) {
 	}
 	defer db.Close()
 
-	sqlStatement := `select count(card_id) from cards where uid=$1;`
+	sqlStatement := `select count(card_id) from cards where uid=$1 AND wiped='N';`
 
 	row := db.QueryRow(sqlStatement, uid)
 	err = row.Scan(&card_count)
@@ -307,7 +307,7 @@ func db_get_card_from_uid(card_uid string) (*card, error) {
 	sqlStatement := `SELECT card_id, k2_cmac_key, uid,` +
 		` last_counter_value, lnurlw_request_timeout_sec,` +
 		` lnurlw_enable, tx_limit_sats, day_limit_sats` +
-		` FROM cards WHERE uid=$1;`
+		` FROM cards WHERE uid=$1 AND wiped='N';`
 	row := db.QueryRow(sqlStatement, card_uid)
 	err = row.Scan(
 		&c.card_id,
