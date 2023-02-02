@@ -61,8 +61,8 @@ func main() {
 
 	// ping
 	internal_router.Path("/ping").Methods("GET").HandlerFunc(internal_ping)
-	//internal_router.Path("/createboltcard").Methods("POST").HandlerFunc(adminapi_createboltcard)
-	//internal_router.Path("/wipeboltcard").Methods("POST").HandlerFunc(adminapi_wipeboltcard)
+	internal_router.Path("/createboltcard").Methods("GET").HandlerFunc(createboltcard)
+	//internal_router.Path("/wipeboltcard").Methods("GET").HandlerFunc(wipeboltcard)
 
 	port := db_get_setting("HOST_PORT")
 	if port == "" {
@@ -77,10 +77,10 @@ func main() {
 	}
 
 	internal_server := &http.Server{
-		Handler:	internal_router,
-		Addr:		":9001",
-		WriteTimeout:	5 * time.Second,
-		ReadTimeout:	5 * time.Second,
+		Handler:      internal_router,
+		Addr:         ":9001",
+		WriteTimeout: 5 * time.Second,
+		ReadTimeout:  5 * time.Second,
 	}
 
 	go external_server.ListenAndServe()
