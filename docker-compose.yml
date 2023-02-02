@@ -15,8 +15,8 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_PORT=5432    
       - DB_NAME=card_db
-    ports: 
-      - 9000:9000
+    expose: 
+      - "9000"
     volumes:
       - ${PWD}/tls.cert:/boltcard/tls.cert
       - ${PWD}/admin.macaroon:/boltcard/admin.macaroon
@@ -36,8 +36,8 @@ services:
       - ./select_db.sql:/docker-entrypoint-initdb.d/select_db.sql
       - ./create_db.sql:/docker-entrypoint-initdb.d/create_db.sql
       - ./settings.sql:/docker-entrypoint-initdb.d/settings.sql
-    ports:
-      - 5432:5432
+    expose:
+      - "5432"
     networks:
       - boltnet
   webserver:
