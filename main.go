@@ -59,10 +59,9 @@ func main() {
 	// this has no authentication and is not to be exposed publicly
 	// it exists for use on a private virtual network within a docker container
 
-	// ping
 	internal_router.Path("/ping").Methods("GET").HandlerFunc(internal_ping)
 	internal_router.Path("/createboltcard").Methods("GET").HandlerFunc(createboltcard)
-	//internal_router.Path("/wipeboltcard").Methods("GET").HandlerFunc(wipeboltcard)
+	internal_router.Path("/wipeboltcard").Methods("GET").HandlerFunc(wipeboltcard)
 
 	port := db_get_setting("HOST_PORT")
 	if port == "" {

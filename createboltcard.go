@@ -22,7 +22,7 @@ func random_hex() string {
 
 func createboltcard(w http.ResponseWriter, r *http.Request) {
 	if db_get_setting("FUNCTION_INTERNAL_API") != "ENABLE" {
-		msg := "Internal API function is not enabled"
+		msg := "createboltcard: internal API function is not enabled"
 		log.Debug(msg)
 		write_error_message(w, msg)
 		return
@@ -31,7 +31,7 @@ func createboltcard(w http.ResponseWriter, r *http.Request) {
 	tx_max_str := r.URL.Query().Get("tx_max")
 	tx_max, err := strconv.Atoi(tx_max_str)
 	if err != nil {
-		msg := "tx_max is not a valid integer"
+		msg := "createboltcard: tx_max is not a valid integer"
 		log.Warn(msg)
 		write_error_message(w, msg)
 		return
@@ -40,7 +40,7 @@ func createboltcard(w http.ResponseWriter, r *http.Request) {
 	day_max_str := r.URL.Query().Get("day_max")
 	day_max, err := strconv.Atoi(day_max_str)
 	if err != nil {
-		msg := "day_max is not a valid integer"
+		msg := "createboltcard: day_max is not a valid integer"
 		log.Warn(msg)
 		write_error_message(w, msg)
 		return
@@ -49,7 +49,7 @@ func createboltcard(w http.ResponseWriter, r *http.Request) {
 	enable_flag_str := r.URL.Query().Get("enable")
 	enable_flag, err := strconv.ParseBool(enable_flag_str)
 	if err != nil {
-		msg := "enable is not a valid boolean"
+		msg := "createboltcard: enable is not a valid boolean"
 		log.Warn(msg)
 		write_error_message(w, msg)
 		return
@@ -60,7 +60,7 @@ func createboltcard(w http.ResponseWriter, r *http.Request) {
 	uid_privacy_flag_str := r.URL.Query().Get("uid_privacy")
 	uid_privacy_flag, err := strconv.ParseBool(uid_privacy_flag_str)
 	if err != nil {
-		msg := "uid_privacy is not a valid boolean"
+		msg := "createboltcard: uid_privacy is not a valid boolean"
 		log.Warn(msg)
 		write_error_message(w, msg)
 		return
@@ -69,7 +69,7 @@ func createboltcard(w http.ResponseWriter, r *http.Request) {
 	allow_neg_bal_flag_str := r.URL.Query().Get("allow_neg_bal")
 	allow_neg_bal_flag, err := strconv.ParseBool(allow_neg_bal_flag_str)
 	if err != nil {
-		msg := "allow_neg_bal is not a valid boolean"
+		msg := "createboltcard: allow_neg_bal is not a valid boolean"
 		log.Warn(msg)
 		write_error_message(w, msg)
 		return
@@ -84,7 +84,7 @@ func createboltcard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if card_count > 0 {
-		msg := "the card name already exists in the database"
+		msg := "createboltcard: the card name already exists in the database"
 		log.Warn(msg)
 		write_error_message(w, msg)
 		return
