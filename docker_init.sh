@@ -15,7 +15,7 @@ PASSWORD=$(date +%s|sha256sum|base64|head -c 32)
 if [[ ! -e .env ]]; then
     cp .env.example .env
 fi
-sed -i "s/^DB_PASSWORD=/DB_PASSWORD=$PASSWORD/g" .env
+sed -i "s/^DB_PASSWORD=.*$/DB_PASSWORD=$PASSWORD/g" .env
 decrypt_key=$(hexdump -vn16 -e'4/4 "%08x" 1 "\n"' /dev/random)
 echo $decrypt_key
 
