@@ -30,8 +30,8 @@ $ docker compose up
 ```
 $ docker compose down
 ```
-To delete the database and reset the docker volume, run `docker-compose down --volumes`
-*NOTE:  caddy_data volume won't be removed even if you run `docker-compose down --volumes` because it's an external volume.*  
+To delete the database and reset the docker volume, run `docker compose down --volumes`
+*NOTE:  caddy_data volume won't be removed even if you run `docker compose down --volumes` because it's an external volume. **Make sure to wipe your programmed cards before wiping the database***
 
 ### check container logs
 
