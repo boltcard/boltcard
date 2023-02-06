@@ -25,7 +25,7 @@ sed -i "s/[(]'MIN_WITHDRAW_SATS'[^)]*[)]/(\'MIN_WITHDRAW_SATS\', \'1\')/" settin
 sed -i "s/[(]'MAX_WITHDRAW_SATS'[^)]*[)]/(\'MAX_WITHDRAW_SATS\', \'1000000\')/" settings.sql
 sed -i "s/[(]'LN_HOST'[^)]*[)]/(\'LN_HOST\', \'$lnd_host\')/" settings.sql
 sed -i "s/[(]'LN_PORT'[^)]*[)]/(\'LN_PORT\', \'$lnd_port\')/" settings.sql
-sed -i "s/[(]'LN_TLS_FILE'[^)]*[)]/(\'LN_TLS_FILE\', \'\/boltcard\/cert.tls\')/" settings.sql
+sed -i "s/[(]'LN_TLS_FILE'[^)]*[)]/(\'LN_TLS_FILE\', \'\/boltcard\/tls.cert\')/" settings.sql
 sed -i "s/[(]'LN_MACAROON_FILE'[^)]*[)]/(\'LN_MACAROON_FILE\', \'\/boltcard\/admin.macaroon\')/" settings.sql
 sed -i "s/[(]'FEE_LIMIT_SAT'[^)]*[)]/(\'FEE_LIMIT_SAT\', \'10\')/" settings.sql
 sed -i "s/[(]'FEE_LIMIT_PERCENT'[^)]*[)]/(\'FEE_LIMIT_PERCENT\', \'0.5\')/" settings.sql
