@@ -43,6 +43,7 @@ jobs:
       - name: Create docs
         run: |
           npm install apidoc
+          which apidoc
           apidoc -i . -o apidocs
 
       - name: List docs
