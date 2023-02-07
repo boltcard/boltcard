@@ -42,8 +42,8 @@ jobs:
           
       - name: Create docs
         run: |
-          npm install -g apidoc
-          apidoc -i / -o apidocs
+          npm install apidoc
+          apidoc -i . -o apidocs
 
       - name: List docs
         run: ls -l apidocs
