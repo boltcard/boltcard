@@ -70,7 +70,7 @@ func wipeboltcard(w http.ResponseWriter, r *http.Request) {
 		`"k3": "` + card_wipe_info_values.k3 + `",` +
 		`"k4": "` + card_wipe_info_values.k4 + `",` +
 		`"uid": "` + card_wipe_info_values.uid + `",` +
-		`"version": 1"}`
+		`"version": 1}`
 
         // log the response
 
