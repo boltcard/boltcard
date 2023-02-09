@@ -15,6 +15,10 @@ set up the domain A record to point to the server
 
 set up the server hosting firewall to allow open access to https (port 443) only
 
+### database setup
+
+copy the `.env.example` file to `.env` and change the database password
+
 
 ### service bring-up and running
 ```
