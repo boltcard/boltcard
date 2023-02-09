@@ -14,8 +14,8 @@ It's recommended to go through the main document set below to set up a system.
 
 | Document | Description |
 | --- | --- |
-| [Specification](docs/SPEC.md) | Bolt card specifications |
 | [System](docs/SYSTEM.md) | Bolt card system overview |
+| [Specification](docs/SPEC.md) | Bolt card specifications |
 | [Docker Service Install](docs/DOCKER_INSTALL.md) | Bolt card service docker installation |
 | [Automatic Card Creation](docs/CARD_ANDROID.md) | Bolt card creation using the Bolt Card app|
 
