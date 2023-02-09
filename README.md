@@ -8,17 +8,21 @@ Each bolt card makes use of a service to receive the request from the merchant s
 
 The 'bolt card service' software provided here can be used to host bolt cards for yourself and others.
 
-The 'bolt card creation' instructions describe how to set up bolt cards for use with your bolt card service.
+It's recommended to go through the main document set below to set up a system.
 
-## Documents
+## Main document set
 
 | Document | Description |
 | --- | --- |
 | [Specification](docs/SPEC.md) | Bolt card specifications |
 | [System](docs/SYSTEM.md) | Bolt card system overview |
-| [Service Install](docs/INSTALL.md) | Bolt card service installation |
 | [Docker Service Install](docs/DOCKER_INSTALL.md) | Bolt card service docker installation |
 | [Automatic Card Creation](docs/CARD_ANDROID.md) | Bolt card creation using the Bolt Card app|
+
+## Additional
+| Document | Description |
+| --- | --- |
+| [Service Install](docs/INSTALL.md) | Bolt card service installation |
 | [Manual Card Creation](docs/CARD_MANUAL.md) | Bolt card creation using NXP TagXplorer software|
 | [FAQ](docs/FAQ.md) | Frequently asked questions |
 
