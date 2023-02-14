@@ -8,6 +8,8 @@ Each bolt card makes use of a service to receive the request from the merchant s
 
 The 'bolt card service' software provided here can be used to host bolt cards for yourself and others.
 
+The simplest way to understand and set up your own system is to read the main document set below.
+
 ## Main document set
 
 | Document | Description |
