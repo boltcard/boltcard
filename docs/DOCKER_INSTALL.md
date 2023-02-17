@@ -18,7 +18,7 @@
 
 - copy the `.env.example` file to `.env` and change the database password
 
-### run service bring-up and running
+### service bring-up and running
 ```
 $ sudo groupadd docker
 $ sudo usermod -aG docker ${USER}
