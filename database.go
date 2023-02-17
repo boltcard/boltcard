@@ -779,48 +779,48 @@ func db_insert_card(one_time_code string, k0_auth_key string, k2_cmac_key string
 
 func db_wipe_card(card_name string) (*card_wipe_info, error) {
 
-        card_wipe_info := card_wipe_info{}
+	card_wipe_info := card_wipe_info{}
 
-        db, err := db_open()
-        if err != nil {
-                return &card_wipe_info, err
-        }
-        defer db.Close()
+	db, err := db_open()
+	if err != nil {
+		return &card_wipe_info, err
+	}
+	defer db.Close()
 
-        // set card as wiped and disabled
+	// set card as wiped and disabled
 
-        sqlStatement := `UPDATE cards SET` +
-                ` lnurlw_enable = 'N', lnurlp_enable = 'N', email_enable = 'N', wiped = 'Y'` +
-                ` WHERE card_name = $1;`
-        res, err := db.Exec(sqlStatement, card_name)
-        if err != nil {
-                return &card_wipe_info, err
-        }
-        count, err := res.RowsAffected()
-        if err != nil {
-                return &card_wipe_info, err
-        }
-        if count != 1 {
-                return &card_wipe_info, errors.New("not one card record updated")
-        }
+	sqlStatement := `UPDATE cards SET` +
+		` lnurlw_enable = 'N', lnurlp_enable = 'N', email_enable = 'N', wiped = 'Y'` +
+		` WHERE card_name = $1;`
+	res, err := db.Exec(sqlStatement, card_name)
+	if err != nil {
+		return &card_wipe_info, err
+	}
+	count, err := res.RowsAffected()
+	if err != nil {
+		return &card_wipe_info, err
+	}
+	if count != 1 {
+		return &card_wipe_info, errors.New("not one card record updated")
+	}
 
-        // get card keys
+	// get card keys
 
-        sqlStatement = `SELECT card_id, uid, k0_auth_key, k2_cmac_key, k3, k4` +
-                ` FROM cards WHERE card_name = $1;`
-        row := db.QueryRow(sqlStatement, card_name)
-        err = row.Scan(
-                &card_wipe_info.id,
-                &card_wipe_info.uid,
-                &card_wipe_info.k0,
-                &card_wipe_info.k2,
-                &card_wipe_info.k3,
-                &card_wipe_info.k4)
-        if err != nil {
-                return &card_wipe_info, err
-        }
+	sqlStatement = `SELECT card_id, uid, k0_auth_key, k2_cmac_key, k3, k4` +
+		` FROM cards WHERE card_name = $1;`
+	row := db.QueryRow(sqlStatement, card_name)
+	err = row.Scan(
+		&card_wipe_info.id,
+		&card_wipe_info.uid,
+		&card_wipe_info.k0,
+		&card_wipe_info.k2,
+		&card_wipe_info.k3,
+		&card_wipe_info.k4)
+	if err != nil {
+		return &card_wipe_info, err
+	}
 
-        card_wipe_info.k1 = db_get_setting("AES_DECRYPT_KEY")
+	card_wipe_info.k1 = db_get_setting("AES_DECRYPT_KEY")
 
-        return &card_wipe_info, nil
+	return &card_wipe_info, nil
 }
