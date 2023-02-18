@@ -12,10 +12,10 @@ echo Continue? "(y or n)"
 read x
 
 if [ "$x" = "y" ]; then
-	psql postgres -f create_db_init.sql
-	psql postgres -f create_db.sql
-	psql postgres -f create_db_user.sql
-	psql postgres -f settings.sql
+	psql postgres -f sql/create_db_init.sql
+	psql postgres -f sql/create_db.sql
+	psql postgres -f sql/create_db_user.sql
+	psql postgres -f sql/settings.sql
 	echo Database created
 else
 	echo No action
