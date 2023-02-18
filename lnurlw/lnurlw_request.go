@@ -1,4 +1,4 @@
-package main
+package lnurlw
 
 import (
 	"encoding/hex"
@@ -10,9 +10,11 @@ import (
 	"strconv"
 	"strings"
 	"github.com/boltcard/boltcard/db"
+	"github.com/boltcard/boltcard/crypto"
+	"github.com/boltcard/boltcard/resp_err"
 )
 
-type Response struct {
+type ResponseData struct {
 	Tag                string `json:"tag"`
 	Callback           string `json:"callback"`
 	LnurlwK1           string `json:"k1"`
@@ -61,7 +63,7 @@ func check_cmac(uid []byte, ctr []byte, k2_cmac_key []byte, cmac []byte) (bool, 
 	sv2[14] = ctr[1]
 	sv2[15] = ctr[2]
 
-	cmac_verified, err := crypto_aes_cmac(k2_cmac_key, sv2, cmac)
+	cmac_verified, err := crypto.Aes_cmac(k2_cmac_key, sv2, cmac)
 
 	if err != nil {
 		return false, err
@@ -159,7 +161,7 @@ func parse_request(req *http.Request) (int, error) {
 		return 0, err
 	}
 
-	dec_p, err := crypto_aes_decrypt(key_sdm_file_read, ba_p)
+	dec_p, err := crypto.Aes_decrypt(key_sdm_file_read, ba_p)
 
 	if err != nil {
 		return 0, err
@@ -245,12 +247,12 @@ func parse_request(req *http.Request) (int, error) {
 	return c.Card_id, nil
 }
 
-func lnurlw_response(w http.ResponseWriter, req *http.Request) {
+func Response(w http.ResponseWriter, req *http.Request) {
 
 	env_host_domain := db.Get_setting("HOST_DOMAIN")
 	if req.Host != env_host_domain {
 		log.Warn("wrong host domain")
-		write_error(w)
+		resp_err.Write(w)
 		return
 	}
 
@@ -258,15 +260,15 @@ func lnurlw_response(w http.ResponseWriter, req *http.Request) {
 
 	if err != nil {
 		log.Debug(err.Error())
-		write_error(w)
+		resp_err.Write(w)
 		return
 	}
 
-	lnurlw_k1, err := create_k1()
+	lnurlw_k1, err := crypto.Create_k1()
 
 	if err != nil {
 		log.Warn(err.Error())
-		write_error(w)
+		resp_err.Write(w)
 		return
 	}
 
@@ -276,7 +278,7 @@ func lnurlw_response(w http.ResponseWriter, req *http.Request) {
 
 	if err != nil {
 		log.Warn(err.Error())
-		write_error(w)
+		resp_err.Write(w)
 		return
 	}
 
@@ -292,7 +294,7 @@ func lnurlw_response(w http.ResponseWriter, req *http.Request) {
 
 	if err != nil {
 		log.Warn(err.Error())
-		write_error(w)
+		resp_err.Write(w)
 		return
 	}
 
@@ -301,11 +303,11 @@ func lnurlw_response(w http.ResponseWriter, req *http.Request) {
 
 	if err != nil {
 		log.Warn(err.Error())
-		write_error(w)
+		resp_err.Write(w)
 		return
 	}
 
-	response := Response{}
+	response := ResponseData{}
 	response.Tag = "withdrawRequest"
 	response.Callback = lnurlw_cb_url
 	response.LnurlwK1 = lnurlw_k1
@@ -317,7 +319,7 @@ func lnurlw_response(w http.ResponseWriter, req *http.Request) {
 
 	if err != nil {
 		log.Warn(err)
-		write_error(w)
+		resp_err.Write(w)
 		return
 	}
 

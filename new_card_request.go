@@ -6,6 +6,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"github.com/boltcard/boltcard/db"
+	"github.com/boltcard/boltcard/resp_err"
 )
 
 /**
@@ -48,7 +49,7 @@ func new_card_request(w http.ResponseWriter, req *http.Request) {
 	params_a, ok := req.URL.Query()["a"]
 	if !ok || len(params_a[0]) < 1 {
 		log.Debug("a not found")
-		write_error(w)
+		resp_err.Write(w)
 		return
 	}
 
@@ -60,13 +61,13 @@ func new_card_request(w http.ResponseWriter, req *http.Request) {
 
 	if err == sql.ErrNoRows {
 		log.Debug(err)
-		write_error_message(w, "one time code was used or card was wiped or card does not exist")
+		resp_err.Write_message(w, "one time code was used or card was wiped or card does not exist")
 		return
 	}
 
 	if err != nil {
 		log.Warn(err)
-		write_error(w)
+		resp_err.Write(w)
 		return
 	}
 
@@ -90,7 +91,7 @@ func new_card_request(w http.ResponseWriter, req *http.Request) {
 	jsonData, err := json.Marshal(response)
 	if err != nil {
 		log.Warn(err)
-		write_error(w)
+		resp_err.Write(w)
 		return
 	}
 

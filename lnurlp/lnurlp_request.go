@@ -1,13 +1,14 @@
-package main
+package lnurlp
 
 import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"github.com/boltcard/boltcard/db"
+	"github.com/boltcard/boltcard/resp_err"
 )
 
-func lnurlp_response(w http.ResponseWriter, r *http.Request) {
+func Response(w http.ResponseWriter, r *http.Request) {
 	if db.Get_setting("FUNCTION_LNURLP") != "ENABLE" {
 		log.Debug("LNURLp function is not enabled")
 		return
@@ -27,7 +28,7 @@ func lnurlp_response(w http.ResponseWriter, r *http.Request) {
 	domain := db.Get_setting("HOST_DOMAIN")
 	if r.Host != domain {
 		log.Warn("wrong host domain")
-		write_error(w)
+		resp_err.Write(w)
 		return
 	}
 
@@ -36,13 +37,13 @@ func lnurlp_response(w http.ResponseWriter, r *http.Request) {
 	card_count, err := db.Get_card_count_for_name_lnurlp(name)
 	if err != nil {
 		log.Warn("could not get card count for name")
-		write_error(w)
+		resp_err.Write(w)
 		return
 	}
 
 	if card_count != 1 {
 		log.Info("not one enabled card with that name")
-		write_error(w)
+		resp_err.Write(w)
 		return
 	}
 
