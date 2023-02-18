@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"github.com/boltcard/boltcard/db"
 )
 
 type Response struct {
@@ -74,10 +75,10 @@ func setup_card_record(uid string, ctr uint32, uid_bin []byte, ctr_bin []byte, c
 	// find the card record by matching the cmac
 	//  get possible card records from the database
 
-	cards, err := db_get_cards_blank_uid()
+	cards, err := db.Get_cards_blank_uid()
 
 	if err != nil {
-		return errors.New("db_get_cards_blank_uid errored")
+		return errors.New("db.Get_cards_blank_uid errored")
 	}
 
 	//  check card records for a matching cmac
@@ -85,7 +86,7 @@ func setup_card_record(uid string, ctr uint32, uid_bin []byte, ctr_bin []byte, c
 	for i, card := range cards {
 		// check the cmac
 
-		k2_cmac_key, err := hex.DecodeString(card.k2_cmac_key)
+		k2_cmac_key, err := hex.DecodeString(card.K2_cmac_key)
 
 		if err != nil {
 			return errors.New("card.k2_cmac_key decode failed")
@@ -100,12 +101,12 @@ func setup_card_record(uid string, ctr uint32, uid_bin []byte, ctr_bin []byte, c
 		if cmac_valid == true {
 			log.WithFields(log.Fields{
 				"i":                i,
-				"card.card_id":     card.card_id,
-				"card.k2_cmac_key": card.k2_cmac_key,
+				"card.card_id":     card.Card_id,
+				"card.k2_cmac_key": card.K2_cmac_key,
 			}).Info("cmac match found")
 
 			// store the uid and ctr in the card record
-			err := db_update_card_uid_ctr(card.card_id, uid, ctr)
+			err := db.Update_card_uid_ctr(card.Card_id, uid, ctr)
 
 			if err != nil {
 				return err
@@ -150,7 +151,7 @@ func parse_request(req *http.Request) (int, error) {
 
 	// decrypt p with aes_decrypt_key
 
-	aes_decrypt_key := db_get_setting("AES_DECRYPT_KEY")
+	aes_decrypt_key := db.Get_setting("AES_DECRYPT_KEY")
 
 	key_sdm_file_read, err := hex.DecodeString(aes_decrypt_key)
 
@@ -179,7 +180,7 @@ func parse_request(req *http.Request) (int, error) {
 
 	log.WithFields(log.Fields{"uid": uid_str, "ctr": ctr_int}).Info("decrypted card data")
 
-	card_count, err := db_get_card_count_for_uid(uid_str)
+	card_count, err := db.Get_card_count_for_uid(uid_str)
 
 	if err != nil {
 		return 0, errors.New("could not get card count for uid")
@@ -197,7 +198,7 @@ func parse_request(req *http.Request) (int, error) {
 
 	// get card record from database for UID
 
-	c, err := db_get_card_from_uid(uid_str)
+	c, err := db.Get_card_from_uid(uid_str)
 
 	if err != nil {
 		return 0, errors.New("card not found for uid")
@@ -205,13 +206,13 @@ func parse_request(req *http.Request) (int, error) {
 
 	// check if card is enabled
 
-	if c.lnurlw_enable != "Y" {
+	if c.Lnurlw_enable != "Y" {
 		return 0, errors.New("card lnurlw enable is not set to Y")
 	}
 
 	// check cmac
 
-	k2_cmac_key, err := hex.DecodeString(c.k2_cmac_key)
+	k2_cmac_key, err := hex.DecodeString(c.K2_cmac_key)
 
 	if err != nil {
 		return 0, err
@@ -229,7 +230,7 @@ func parse_request(req *http.Request) (int, error) {
 
 	// check and update last_counter_value
 
-	counter_ok, err := db_check_and_update_counter(c.card_id, ctr_int)
+	counter_ok, err := db.Check_and_update_counter(c.Card_id, ctr_int)
 
 	if err != nil {
 		return 0, err
@@ -239,14 +240,14 @@ func parse_request(req *http.Request) (int, error) {
 		return 0, errors.New("counter not increasing")
 	}
 
-	log.WithFields(log.Fields{"card_id": c.card_id, "counter": ctr_int}).Info("validated")
+	log.WithFields(log.Fields{"card_id": c.Card_id, "counter": ctr_int}).Info("validated")
 
-	return c.card_id, nil
+	return c.Card_id, nil
 }
 
 func lnurlw_response(w http.ResponseWriter, req *http.Request) {
 
-	env_host_domain := db_get_setting("HOST_DOMAIN")
+	env_host_domain := db.Get_setting("HOST_DOMAIN")
 	if req.Host != env_host_domain {
 		log.Warn("wrong host domain")
 		write_error(w)
@@ -271,7 +272,7 @@ func lnurlw_response(w http.ResponseWriter, req *http.Request) {
 
 	// store k1 in database and include in response
 
-	err = db_insert_payment(card_id, lnurlw_k1)
+	err = db.Insert_payment(card_id, lnurlw_k1)
 
 	if err != nil {
 		log.Warn(err.Error())
@@ -286,7 +287,7 @@ func lnurlw_response(w http.ResponseWriter, req *http.Request) {
 		lnurlw_cb_url = "https://" + req.Host + "/cb"
 	}
 
-	min_withdraw_sats_str := db_get_setting("MIN_WITHDRAW_SATS")
+	min_withdraw_sats_str := db.Get_setting("MIN_WITHDRAW_SATS")
 	min_withdraw_sats, err := strconv.Atoi(min_withdraw_sats_str)
 
 	if err != nil {
@@ -295,7 +296,7 @@ func lnurlw_response(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	max_withdraw_sats_str := db_get_setting("MAX_WITHDRAW_SATS")
+	max_withdraw_sats_str := db.Get_setting("MAX_WITHDRAW_SATS")
 	max_withdraw_sats, err := strconv.Atoi(max_withdraw_sats_str)
 
 	if err != nil {

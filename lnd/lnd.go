@@ -1,4 +1,4 @@
-package main
+package lnd
 
 import (
 	"context"
@@ -20,6 +20,9 @@ import (
 	"google.golang.org/grpc/credentials"
 
 	"gopkg.in/macaroon.v2"
+
+	"github.com/boltcard/boltcard/db"
+	"github.com/boltcard/boltcard/email"
 )
 
 type rpcCreds map[string]string
@@ -72,9 +75,9 @@ func getGrpcConn(hostname string, port int, tlsFile, macaroonFile string) *grpc.
 
 // https://api.lightning.community/?shell#addinvoice
 
-func add_invoice(amount_sat int64, metadata string) (payment_request string, r_hash []byte, return_err error) {
+func Add_invoice(amount_sat int64, metadata string) (payment_request string, r_hash []byte, return_err error) {
 
-	ln_port, err := strconv.Atoi(db_get_setting("LN_PORT"))
+	ln_port, err := strconv.Atoi(db.Get_setting("LN_PORT"))
 	if err != nil {
 		return "", nil, err
 	}
@@ -82,10 +85,10 @@ func add_invoice(amount_sat int64, metadata string) (payment_request string, r_h
 	dh := sha256.Sum256([]byte(metadata))
 
 	connection := getGrpcConn(
-		db_get_setting("LN_HOST"),
+		db.Get_setting("LN_HOST"),
 		ln_port,
-		db_get_setting("LN_TLS_FILE"),
-		db_get_setting("LN_MACAROON_FILE"))
+		db.Get_setting("LN_TLS_FILE"),
+		db.Get_setting("LN_MACAROON_FILE"))
 
 	l_client := lnrpc.NewLightningClient(connection)
 
@@ -106,23 +109,23 @@ func add_invoice(amount_sat int64, metadata string) (payment_request string, r_h
 
 // https://api.lightning.community/?shell#subscribesingleinvoice
 
-func monitor_invoice_state(r_hash []byte) {
+func Monitor_invoice_state(r_hash []byte) {
 
 	// SubscribeSingleInvoice
 
 	// get node parameters from environment variables
 
-	ln_port, err := strconv.Atoi(db_get_setting("LN_PORT"))
+	ln_port, err := strconv.Atoi(db.Get_setting("LN_PORT"))
 	if err != nil {
 		log.Warn(err)
 		return
 	}
 
 	connection := getGrpcConn(
-		db_get_setting("LN_HOST"),
+		db.Get_setting("LN_HOST"),
 		ln_port,
-		db_get_setting("LN_TLS_FILE"),
-		db_get_setting("LN_MACAROON_FILE"))
+		db.Get_setting("LN_TLS_FILE"),
+		db.Get_setting("LN_MACAROON_FILE"))
 
 	i_client := invoicesrpc.NewInvoicesClient(connection)
 
@@ -156,14 +159,14 @@ func monitor_invoice_state(r_hash []byte) {
 				"invoice_state": invoice_state,
 			}).Info("invoice state updated")
 
-		db_update_receipt_state(hex.EncodeToString(r_hash), invoice_state)
+		db.Update_receipt_state(hex.EncodeToString(r_hash), invoice_state)
 	}
 
 	connection.Close()
 
 	// send email
 
-	card_id, err := db_get_card_id_for_r_hash(hex.EncodeToString(r_hash))
+	card_id, err := db.Get_card_id_for_r_hash(hex.EncodeToString(r_hash))
 	if err != nil {
 		log.WithFields(log.Fields{"r_hash": hex.EncodeToString(r_hash)}).Warn(err)
 		return
@@ -171,52 +174,52 @@ func monitor_invoice_state(r_hash []byte) {
 
 	log.WithFields(log.Fields{"r_hash": hex.EncodeToString(r_hash), "card_id": card_id}).Debug("card found")
 
-	c, err := db_get_card_from_card_id(card_id)
+	c, err := db.Get_card_from_card_id(card_id)
 	if err != nil {
 		log.WithFields(log.Fields{"r_hash": hex.EncodeToString(r_hash)}).Warn(err)
 		return
 	}
 
-	if c.email_enable != "Y" {
+	if c.Email_enable != "Y" {
 		log.Debug("email is not enabled for the card")
 		return
 	}
 
-	go send_balance_email(c.email_address, card_id)
+	go email.Send_balance_email(c.Email_address, card_id)
 
 	return
 }
 
 // https://api.lightning.community/?shell#sendpaymentv2
 
-func pay_invoice(card_payment_id int, invoice string) {
+func Pay_invoice(card_payment_id int, invoice string) {
 
 	// SendPaymentV2
 
 	// get node parameters from environment variables
 
-	ln_port, err := strconv.Atoi(db_get_setting("LN_PORT"))
+	ln_port, err := strconv.Atoi(db.Get_setting("LN_PORT"))
 	if err != nil {
 		log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
 		return
 	}
 
 	connection := getGrpcConn(
-		db_get_setting("LN_HOST"),
+		db.Get_setting("LN_HOST"),
 		ln_port,
-		db_get_setting("LN_TLS_FILE"),
-		db_get_setting("LN_MACAROON_FILE"))
+		db.Get_setting("LN_TLS_FILE"),
+		db.Get_setting("LN_MACAROON_FILE"))
 
 	r_client := routerrpc.NewRouterClient(connection)
 
-	fee_limit_sat_str := db_get_setting("FEE_LIMIT_SAT")
+	fee_limit_sat_str := db.Get_setting("FEE_LIMIT_SAT")
 	fee_limit_sat, err := strconv.ParseInt(fee_limit_sat_str, 10, 64)
 	if err != nil {
 		log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
 		return
 	}
 
-	fee_limit_percent_str := db_get_setting("FEE_LIMIT_PERCENT")
+	fee_limit_percent_str := db.Get_setting("FEE_LIMIT_PERCENT")
 	fee_limit_percent, err := strconv.ParseFloat(fee_limit_percent_str, 64)
 	if err != nil {
 		log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
@@ -260,7 +263,7 @@ func pay_invoice(card_payment_id int, invoice string) {
 		log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Info("payment failure reason : ", failure_reason)
 		log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Info("payment status : ", payment_status)
 
-		err = db_update_payment_status(card_payment_id, payment_status, failure_reason)
+		err = db.Update_payment_status(card_payment_id, payment_status, failure_reason)
 		if err != nil {
 			log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
 			return
@@ -271,7 +274,7 @@ func pay_invoice(card_payment_id int, invoice string) {
 
 	// send email
 
-	card_id, err := db_get_card_id_for_card_payment_id(card_payment_id)
+	card_id, err := db.Get_card_id_for_card_payment_id(card_payment_id)
 	if err != nil {
 		log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
 		return
@@ -279,18 +282,18 @@ func pay_invoice(card_payment_id int, invoice string) {
 
 	log.WithFields(log.Fields{"card_payment_id": card_payment_id, "card_id": card_id}).Debug("card found")
 
-	c, err := db_get_card_from_card_id(card_id)
+	c, err := db.Get_card_from_card_id(card_id)
 	if err != nil {
 		log.WithFields(log.Fields{"card_payment_id": card_payment_id}).Warn(err)
 		return
 	}
 
-	if c.email_enable != "Y" {
+	if c.Email_enable != "Y" {
 		log.Debug("email is not enabled for the card")
 		return
 	}
 
-	go send_balance_email(c.email_address, card_id)
+	go email.Send_balance_email(c.Email_address, card_id)
 
 	return
 }

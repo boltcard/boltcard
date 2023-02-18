@@ -1,4 +1,4 @@
-package main
+package email
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
@@ -9,35 +9,36 @@ import (
 	log "github.com/sirupsen/logrus"
 	"strconv"
 	"strings"
+	"github.com/boltcard/boltcard/db"
 )
 
-func send_balance_email(recipient_email string, card_id int) {
+func Send_balance_email(recipient_email string, card_id int) {
 
-	c, err := db_get_card_from_card_id(card_id)
+	c, err := db.Get_card_from_card_id(card_id)
 	if err != nil {
 		log.Warn(err.Error())
 		return
 	}
 
-	card_total_sats, err := db_get_card_total_sats(card_id)
+	card_total_sats, err := db.Get_card_total_sats(card_id)
 	if err != nil {
 		log.Warn(err.Error())
 		return
 	}
 
-	email_max_txs, err := strconv.Atoi(db_get_setting("EMAIL_MAX_TXS"))
+	email_max_txs, err := strconv.Atoi(db.Get_setting("EMAIL_MAX_TXS"))
 	if err != nil {
 		log.Warn(err.Error())
 		return
 	}
 
-	txs, err := db_get_card_txs(card_id, email_max_txs+1)
+	txs, err := db.Get_card_txs(card_id, email_max_txs+1)
 	if err != nil {
 		log.Warn(err.Error())
 		return
 	}
 
-	subject := c.card_name + " balance = " + strconv.Itoa(card_total_sats) + " sats"
+	subject := c.Card_name + " balance = " + strconv.Itoa(card_total_sats) + " sats"
 
 	// add transactions to the email body
 
@@ -56,9 +57,9 @@ func send_balance_email(recipient_email string, card_id int) {
 		if i < email_max_txs {
 			html_body_sb.WriteString(
 				"<tr>" +
-					"<td>" + tx.tx_time + "</td>" +
-					"<td>" + tx.tx_type + "</td>" +
-					"<td style='text-align:right'>" + strconv.Itoa(tx.tx_amount_msats/1000) + "</td>" +
+					"<td>" + tx.Tx_time + "</td>" +
+					"<td>" + tx.Tx_type + "</td>" +
+					"<td style='text-align:right'>" + strconv.Itoa(tx.Tx_amount_msats/1000) + "</td>" +
 					"</tr>")
 		} else {
 			html_body_sb.WriteString(
@@ -69,8 +70,8 @@ func send_balance_email(recipient_email string, card_id int) {
 					"</tr>")
 		}
 
-		text_body_sb.WriteString(tx.tx_type +
-			" " + strconv.Itoa(tx.tx_amount_msats/1000))
+		text_body_sb.WriteString(tx.Tx_type +
+			" " + strconv.Itoa(tx.Tx_amount_msats/1000))
 	}
 
 	html_body_sb.WriteString("</table></body></html>")
@@ -78,7 +79,7 @@ func send_balance_email(recipient_email string, card_id int) {
 	html_body := html_body_sb.String()
 	text_body := text_body_sb.String()
 
-	send_email(recipient_email,
+	Send_email(recipient_email,
 		subject,
 		html_body,
 		text_body)
@@ -86,11 +87,11 @@ func send_balance_email(recipient_email string, card_id int) {
 
 // https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/ses-example-send-email.html
 
-func send_email(recipient string, subject string, htmlBody string, textBody string) {
+func Send_email(recipient string, subject string, htmlBody string, textBody string) {
 
-	aws_ses_id := db_get_setting("AWS_SES_ID")
-	aws_ses_secret := db_get_setting("AWS_SES_SECRET")
-	sender := db_get_setting("AWS_SES_EMAIL_FROM")
+	aws_ses_id := db.Get_setting("AWS_SES_ID")
+	aws_ses_secret := db.Get_setting("AWS_SES_SECRET")
+	sender := db.Get_setting("AWS_SES_EMAIL_FROM")
 
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String("us-east-1"),

@@ -1,4 +1,4 @@
-package main
+package db
 
 import (
 	"database/sql"
@@ -8,45 +8,45 @@ import (
 	"os"
 )
 
-type card struct {
-	card_id                    int
-	card_guid                  string
-	k0_auth_key                string
-	k1_decrypt_key             string
-	k2_cmac_key                string
-	k3                         string
-	k4                         string
-	db_uid                     string
-	last_counter_value         uint32
-	lnurlw_request_timeout_sec int
-	lnurlw_enable              string
-	tx_limit_sats              int
-	day_limit_sats             int
-	lnurlp_enable              string
-	email_address              string
-	email_enable               string
-	uid_privacy                string
-	one_time_code              string
-	card_name                  string
-	allow_negative_balance     string
+type Card struct {
+	Card_id                    int
+	Card_guid                  string
+	K0_auth_key                string
+	K1_decrypt_key             string
+	K2_cmac_key                string
+	K3                         string
+	K4                         string
+	Db_uid                     string
+	Last_counter_value         uint32
+	Lnurlw_request_timeout_sec int
+	Lnurlw_enable              string
+	Tx_limit_sats              int
+	Day_limit_sats             int
+	Lnurlp_enable              string
+	Email_address              string
+	Email_enable               string
+	Uid_privacy                string
+	One_time_code              string
+	Card_name                  string
+	Allow_negative_balance     string
 }
 
-type payment struct {
-	card_payment_id int
-	card_id         int
-	lnurlw_k1       string
-	paid_flag       string
+type Payment struct {
+	Card_payment_id int
+	Card_id         int
+	Lnurlw_k1       string
+	Paid_flag       string
 }
 
-type transaction struct {
-	card_id         int
-	tx_id           int
-	tx_type         string
-	tx_amount_msats int
-	tx_time         string
+type Transaction struct {
+	Card_id         int
+	Tx_id           int
+	Tx_type         string
+	Tx_amount_msats int
+	Tx_time         string
 }
 
-func db_open() (*sql.DB, error) {
+func open() (*sql.DB, error) {
 
 	// get connection string from environment variables
 
@@ -65,11 +65,11 @@ func db_open() (*sql.DB, error) {
 	return db, nil
 }
 
-func db_get_setting(setting_name string) string {
+func Get_setting(setting_name string) string {
 
 	setting_value := ""
 
-	db, err := db_open()
+	db, err := open()
 	if err != nil {
 		return ""
 	}
@@ -86,11 +86,11 @@ func db_get_setting(setting_name string) string {
 	return setting_value
 }
 
-func db_get_new_card(one_time_code string) (*card, error) {
+func Get_new_card(one_time_code string) (*Card, error) {
 
-	c := card{}
+	c := Card{}
 
-	db, err := db_open()
+	db, err := open()
 	if err != nil {
 		return &c, err
 	}
@@ -101,12 +101,12 @@ func db_get_new_card(one_time_code string) (*card, error) {
 		` one_time_code_expiry > NOW() AND one_time_code_used = 'N' AND wiped = 'N';`
 	row := db.QueryRow(sqlStatement, one_time_code)
 	err = row.Scan(
-		&c.k0_auth_key,
-		&c.k2_cmac_key,
-		&c.k3,
-		&c.k4,
-		&c.card_name,
-		&c.uid_privacy)
+		&c.K0_auth_key,
+		&c.K2_cmac_key,
+		&c.K3,
+		&c.K4,
+		&c.Card_name,
+		&c.Uid_privacy)
 	if err != nil {
 		return &c, err
 	}
@@ -120,11 +120,11 @@ func db_get_new_card(one_time_code string) (*card, error) {
 	return &c, nil
 }
 
-func db_get_card_count_for_uid(uid string) (int, error) {
+func Get_card_count_for_uid(uid string) (int, error) {
 
 	card_count := 0
 
-	db, err := db_open()
+	db, err := open()
 	if err != nil {
 		return 0, err
 	}
@@ -141,11 +141,11 @@ func db_get_card_count_for_uid(uid string) (int, error) {
 	return card_count, nil
 }
 
-func db_get_card_count_for_name_lnurlp(name string) (int, error) {
+func Get_card_count_for_name_lnurlp(name string) (int, error) {
 
 	card_count := 0
 
-	db, err := db_open()
+	db, err := open()
 	if err != nil {
 		return 0, err
 	}
@@ -162,11 +162,11 @@ func db_get_card_count_for_name_lnurlp(name string) (int, error) {
 	return card_count, nil
 }
 
-func db_get_card_id_for_name(name string) (int, error) {
+func Get_card_id_for_name(name string) (int, error) {
 
 	card_id := 0
 
-	db, err := db_open()
+	db, err := open()
 	if err != nil {
 		return 0, err
 	}
@@ -183,10 +183,10 @@ func db_get_card_id_for_name(name string) (int, error) {
 	return card_id, nil
 }
 
-func db_get_card_id_for_card_payment_id(card_payment_id int) (int, error) {
+func Get_card_id_for_card_payment_id(card_payment_id int) (int, error) {
 	card_id := 0
 
-	db, err := db_open()
+	db, err := open()
 	if err != nil {
 		return 0, err
 	}
@@ -203,10 +203,10 @@ func db_get_card_id_for_card_payment_id(card_payment_id int) (int, error) {
 	return card_id, nil
 }
 
-func db_get_card_id_for_r_hash(r_hash string) (int, error) {
+func Get_card_id_for_r_hash(r_hash string) (int, error) {
 	card_id := 0
 
-	db, err := db_open()
+	db, err := open()
 	if err != nil {
 		return 0, err
 	}
@@ -223,11 +223,11 @@ func db_get_card_id_for_r_hash(r_hash string) (int, error) {
 	return card_id, nil
 }
 
-func db_get_cards_blank_uid() ([]card, error) {
+func Get_cards_blank_uid() ([]Card, error) {
 
 	// open the database
 
-	db, err := db_open()
+	db, err := open()
 
 	if err != nil {
 		return nil, err
@@ -249,12 +249,12 @@ func db_get_cards_blank_uid() ([]card, error) {
 
 	// prepare the results
 
-	var cards []card
+	var cards []Card
 
 	// Loop through rows, using Scan to assign column data to struct fields.
 	for rows.Next() {
-		var c card
-		err := rows.Scan(&c.card_id, &c.k2_cmac_key)
+		var c Card
+		err := rows.Scan(&c.Card_id, &c.K2_cmac_key)
 
 		if err != nil {
 			return cards, err
@@ -271,8 +271,8 @@ func db_get_cards_blank_uid() ([]card, error) {
 	return cards, nil
 }
 
-func db_update_card_uid_ctr(card_id int, uid string, ctr uint32) error {
-	db, err := db_open()
+func Update_card_uid_ctr(card_id int, uid string, ctr uint32) error {
+	db, err := open()
 	if err != nil {
 		return err
 	}
@@ -294,11 +294,11 @@ func db_update_card_uid_ctr(card_id int, uid string, ctr uint32) error {
 	return nil
 }
 
-func db_get_card_from_uid(card_uid string) (*card, error) {
+func Get_card_from_uid(card_uid string) (*Card, error) {
 
-	c := card{}
+	c := Card{}
 
-	db, err := db_open()
+	db, err := open()
 	if err != nil {
 		return &c, err
 	}
@@ -310,14 +310,14 @@ func db_get_card_from_uid(card_uid string) (*card, error) {
 		` FROM cards WHERE uid=$1 AND wiped='N';`
 	row := db.QueryRow(sqlStatement, card_uid)
 	err = row.Scan(
-		&c.card_id,
-		&c.k2_cmac_key,
-		&c.db_uid,
-		&c.last_counter_value,
-		&c.lnurlw_request_timeout_sec,
-		&c.lnurlw_enable,
-		&c.tx_limit_sats,
-		&c.day_limit_sats)
+		&c.Card_id,
+		&c.K2_cmac_key,
+		&c.Db_uid,
+		&c.Last_counter_value,
+		&c.Lnurlw_request_timeout_sec,
+		&c.Lnurlw_enable,
+		&c.Tx_limit_sats,
+		&c.Day_limit_sats)
 	if err != nil {
 		return &c, err
 	}
@@ -325,11 +325,11 @@ func db_get_card_from_uid(card_uid string) (*card, error) {
 	return &c, nil
 }
 
-func db_get_card_from_card_id(card_id int) (*card, error) {
+func Get_card_from_card_id(card_id int) (*Card, error) {
 
-	c := card{}
+	c := Card{}
 
-	db, err := db_open()
+	db, err := open()
 	if err != nil {
 		return &c, err
 	}
@@ -342,18 +342,18 @@ func db_get_card_from_card_id(card_id int) (*card, error) {
 		`allow_negative_balance FROM cards WHERE card_id=$1;`
 	row := db.QueryRow(sqlStatement, card_id)
 	err = row.Scan(
-		&c.card_id,
-		&c.k2_cmac_key,
-		&c.db_uid,
-		&c.last_counter_value,
-		&c.lnurlw_request_timeout_sec,
-		&c.lnurlw_enable,
-		&c.tx_limit_sats,
-		&c.day_limit_sats,
-		&c.email_enable,
-		&c.email_address,
-		&c.card_name,
-		&c.allow_negative_balance)
+		&c.Card_id,
+		&c.K2_cmac_key,
+		&c.Db_uid,
+		&c.Last_counter_value,
+		&c.Lnurlw_request_timeout_sec,
+		&c.Lnurlw_enable,
+		&c.Tx_limit_sats,
+		&c.Day_limit_sats,
+		&c.Email_enable,
+		&c.Email_address,
+		&c.Card_name,
+		&c.Allow_negative_balance)
 	if err != nil {
 		return &c, err
 	}
@@ -361,9 +361,9 @@ func db_get_card_from_card_id(card_id int) (*card, error) {
 	return &c, nil
 }
 
-func db_check_lnurlw_timeout(card_payment_id int) (bool, error) {
+func Check_lnurlw_timeout(card_payment_id int) (bool, error) {
 
-	db, err := db_open()
+	db, err := open()
 	if err != nil {
 		return true, err
 	}
@@ -383,9 +383,9 @@ func db_check_lnurlw_timeout(card_payment_id int) (bool, error) {
 	return lnurlw_timeout, nil
 }
 
-func db_check_and_update_counter(card_id int, new_counter_value uint32) (bool, error) {
+func Check_and_update_counter(card_id int, new_counter_value uint32) (bool, error) {
 
-	db, err := db_open()
+	db, err := open()
 	if err != nil {
 		return false, err
 	}
@@ -408,9 +408,9 @@ func db_check_and_update_counter(card_id int, new_counter_value uint32) (bool, e
 	return true, nil
 }
 
-func db_insert_payment(card_id int, lnurlw_k1 string) error {
+func Insert_payment(card_id int, lnurlw_k1 string) error {
 
-	db, err := db_open()
+	db, err := open()
 	if err != nil {
 		return err
 	}
@@ -436,13 +436,13 @@ func db_insert_payment(card_id int, lnurlw_k1 string) error {
 	return nil
 }
 
-func db_insert_receipt(
+func Insert_receipt(
 	card_id int,
 	ln_invoice string,
 	r_hash_hex string,
 	amount_msat int64) error {
 
-	db, err := db_open()
+	db, err := open()
 	if err != nil {
 		return err
 	}
@@ -468,8 +468,8 @@ func db_insert_receipt(
 	return nil
 }
 
-func db_update_receipt_state(r_hash_hex string, invoice_state string) error {
-	db, err := db_open()
+func Update_receipt_state(r_hash_hex string, invoice_state string) error {
+	db, err := open()
 	if err != nil {
 		return err
 	}
@@ -493,10 +493,10 @@ func db_update_receipt_state(r_hash_hex string, invoice_state string) error {
 	return nil
 }
 
-func db_get_payment_k1(lnurlw_k1 string) (*payment, error) {
-	p := payment{}
+func Get_payment_k1(lnurlw_k1 string) (*Payment, error) {
+	p := Payment{}
 
-	db, err := db_open()
+	db, err := open()
 	if err != nil {
 		return &p, err
 	}
@@ -506,9 +506,9 @@ func db_get_payment_k1(lnurlw_k1 string) (*payment, error) {
 		` FROM card_payments WHERE lnurlw_k1=$1;`
 	row := db.QueryRow(sqlStatement, lnurlw_k1)
 	err = row.Scan(
-		&p.card_payment_id,
-		&p.card_id,
-		&p.paid_flag)
+		&p.Card_payment_id,
+		&p.Card_id,
+		&p.Paid_flag)
 	if err != nil {
 		return &p, err
 	}
@@ -516,9 +516,9 @@ func db_get_payment_k1(lnurlw_k1 string) (*payment, error) {
 	return &p, nil
 }
 
-func db_update_payment_invoice(card_payment_id int, ln_invoice string, amount_msats int64) error {
+func Update_payment_invoice(card_payment_id int, ln_invoice string, amount_msats int64) error {
 
-	db, err := db_open()
+	db, err := open()
 	if err != nil {
 		return err
 	}
@@ -540,9 +540,9 @@ func db_update_payment_invoice(card_payment_id int, ln_invoice string, amount_ms
 	return nil
 }
 
-func db_update_payment_paid(card_payment_id int) error {
+func Update_payment_paid(card_payment_id int) error {
 
-	db, err := db_open()
+	db, err := open()
 	if err != nil {
 		return err
 	}
@@ -564,9 +564,9 @@ func db_update_payment_paid(card_payment_id int) error {
 	return nil
 }
 
-func db_update_payment_status(card_payment_id int, payment_status string, failure_reason string) error {
+func Update_payment_status(card_payment_id int, payment_status string, failure_reason string) error {
 
-	db, err := db_open()
+	db, err := open()
 
 	if err != nil {
 		return err
@@ -596,9 +596,9 @@ func db_update_payment_status(card_payment_id int, payment_status string, failur
 	return nil
 }
 
-func db_get_card_totals(card_id int) (int, error) {
+func Get_card_totals(card_id int) (int, error) {
 
-	db, err := db_open()
+	db, err := open()
 	if err != nil {
 		return 0, err
 	}
@@ -620,10 +620,10 @@ func db_get_card_totals(card_id int) (int, error) {
 	return day_total_sats, nil
 }
 
-func db_get_card_txs(card_id int, max_txs int) ([]transaction, error) {
+func Get_card_txs(card_id int, max_txs int) ([]Transaction, error) {
 	// open the database
 
-	db, err := db_open()
+	db, err := open()
 
 	if err != nil {
 		return nil, err
@@ -655,12 +655,12 @@ func db_get_card_txs(card_id int, max_txs int) ([]transaction, error) {
 
 	// prepare the results
 
-	var transactions []transaction
+	var transactions []Transaction
 
 	// Loop through rows, using Scan to assign column data to struct fields.
 	for rows.Next() {
-		var t transaction
-		err := rows.Scan(&t.card_id, &t.tx_id, &t.tx_type, &t.tx_amount_msats, &t.tx_time)
+		var t Transaction
+		err := rows.Scan(&t.Card_id, &t.Tx_id, &t.Tx_type, &t.Tx_amount_msats, &t.Tx_time)
 
 		if err != nil {
 			return transactions, err
@@ -677,9 +677,9 @@ func db_get_card_txs(card_id int, max_txs int) ([]transaction, error) {
 	return transactions, nil
 }
 
-func db_get_card_total_sats(card_id int) (int, error) {
+func Get_card_total_sats(card_id int) (int, error) {
 
-	db, err := db_open()
+	db, err := open()
 	if err != nil {
 		return 0, err
 	}

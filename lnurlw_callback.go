@@ -4,11 +4,13 @@ import (
 	decodepay "github.com/fiatjaf/ln-decodepay"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"github.com/boltcard/boltcard/db"
+	"github.com/boltcard/boltcard/lnd"
 )
 
 func lnurlw_callback(w http.ResponseWriter, req *http.Request) {
 
-	env_host_domain := db_get_setting("HOST_DOMAIN")
+	env_host_domain := db.Get_setting("HOST_DOMAIN")
 	if req.Host != env_host_domain {
 		log.Warn("wrong host domain")
 		write_error(w)
@@ -29,7 +31,7 @@ func lnurlw_callback(w http.ResponseWriter, req *http.Request) {
 
 	param_k1 := params_k1[0]
 
-	p, err := db_get_payment_k1(param_k1)
+	p, err := db.Get_payment_k1(param_k1)
 	if err != nil {
 		log.WithFields(log.Fields{"url": url, "k1": param_k1}).Warn(err)
 		write_error(w)
@@ -37,28 +39,28 @@ func lnurlw_callback(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// check that payment has not been made
-	if p.paid_flag != "N" {
-		log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Info("payment already made")
+	if p.Paid_flag != "N" {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("payment already made")
 		write_error(w)
 		return
 	}
 
 	// check if lnurlw_request has timed out
-	lnurlw_timeout, err := db_check_lnurlw_timeout(p.card_payment_id)
+	lnurlw_timeout, err := db.Check_lnurlw_timeout(p.Card_payment_id)
 	if err != nil {
-		log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Warn(err)
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
 		write_error(w)
 		return
 	}
 	if lnurlw_timeout == true {
-		log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Info("lnurlw request has timed out")
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("lnurlw request has timed out")
 		write_error(w)
 		return
 	}
 
 	params_pr, ok := req.URL.Query()["pr"]
 	if !ok || len(params_pr[0]) < 1 {
-		log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Warn("pr field not found")
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn("pr field not found")
 		write_error(w)
 		return
 	}
@@ -67,19 +69,19 @@ func lnurlw_callback(w http.ResponseWriter, req *http.Request) {
 	bolt11, _ := decodepay.Decodepay(param_pr)
 
 	// record the lightning invoice
-	err = db_update_payment_invoice(p.card_payment_id, param_pr, bolt11.MSatoshi)
+	err = db.Update_payment_invoice(p.Card_payment_id, param_pr, bolt11.MSatoshi)
 	if err != nil {
-		log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Warn(err)
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
 		write_error(w)
 		return
 	}
 
-	log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Debug("checking payment rules")
+	log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Debug("checking payment rules")
 
 	// check if we are only sending funds to a defined test node
-	testnode := db_get_setting("LN_TESTNODE")
+	testnode := db.Get_setting("LN_TESTNODE")
 	if testnode != "" && bolt11.Payee != testnode {
-		log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Info("rejected as not the defined test node")
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("rejected as not the defined test node")
 		write_error(w)
 		return
 	}
@@ -88,33 +90,33 @@ func lnurlw_callback(w http.ResponseWriter, req *http.Request) {
 
 	invoice_sats := int(bolt11.MSatoshi / 1000)
 
-	day_total_sats, err := db_get_card_totals(p.card_id)
+	day_total_sats, err := db.Get_card_totals(p.Card_id)
 	if err != nil {
-		log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Warn(err)
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
 		write_error(w)
 		return
 	}
 
-	c, err := db_get_card_from_card_id(p.card_id)
+	c, err := db.Get_card_from_card_id(p.Card_id)
 	if err != nil {
-		log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Warn(err)
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
 		write_error(w)
 		return
 	}
 
-	if invoice_sats > c.tx_limit_sats {
-		log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Info("invoice_sats: ", invoice_sats)
-		log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Info("tx_limit_sats: ", c.tx_limit_sats)
-		log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Info("over tx_limit_sats!")
+	if invoice_sats > c.Tx_limit_sats {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("invoice_sats: ", invoice_sats)
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("tx_limit_sats: ", c.Tx_limit_sats)
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("over tx_limit_sats!")
 		write_error(w)
 		return
 	}
 
-	if day_total_sats+invoice_sats > c.day_limit_sats {
-		log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Info("invoice_sats: ", invoice_sats)
-		log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Info("day_total_sats: ", day_total_sats)
-		log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Info("day_limit_sats: ", c.day_limit_sats)
-		log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Info("over day_limit_sats!")
+	if day_total_sats+invoice_sats > c.Day_limit_sats {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("invoice_sats: ", invoice_sats)
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("day_total_sats: ", day_total_sats)
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("day_limit_sats: ", c.Day_limit_sats)
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("over day_limit_sats!")
 		write_error(w)
 		return
 	}
@@ -122,27 +124,27 @@ func lnurlw_callback(w http.ResponseWriter, req *http.Request) {
 	// check the card balance if marked as 'must stay above zero' (default)
 	//  i.e. cards.allow_negative_balance == 'N'
 
-	if c.allow_negative_balance != "Y" {
-		card_total, err := db_get_card_total_sats(p.card_id)
+	if c.Allow_negative_balance != "Y" {
+		card_total, err := db.Get_card_total_sats(p.Card_id)
 		if err != nil {
-			log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Warn(err)
+			log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
 			write_error(w)
 			return
 		}
 
 		if card_total-invoice_sats < 0 {
-			log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Warn("not enough balance")
+			log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn("not enough balance")
 			write_error(w)
 			return
 		}
 	}
 
-	log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Info("paying invoice")
+	log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("paying invoice")
 
 	// update paid_flag so we only attempt payment once
-	err = db_update_payment_paid(p.card_payment_id)
+	err = db.Update_payment_paid(p.Card_payment_id)
 	if err != nil {
-		log.WithFields(log.Fields{"card_payment_id": p.card_payment_id}).Warn(err)
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
 		write_error(w)
 		return
 	}
@@ -153,7 +155,7 @@ func lnurlw_callback(w http.ResponseWriter, req *http.Request) {
 	// {"status": "ERROR", "reason": "error details..."}
 	//  JSON response and then attempts to pay the invoices asynchronously.
 
-	go pay_invoice(p.card_payment_id, param_pr)
+	go lnd.Pay_invoice(p.Card_payment_id, param_pr)
 
 	log.Debug("sending 'status OK' response")
 

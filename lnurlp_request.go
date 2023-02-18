@@ -4,10 +4,11 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"github.com/boltcard/boltcard/db"
 )
 
 func lnurlp_response(w http.ResponseWriter, r *http.Request) {
-	if db_get_setting("FUNCTION_LNURLP") != "ENABLE" {
+	if db.Get_setting("FUNCTION_LNURLP") != "ENABLE" {
 		log.Debug("LNURLp function is not enabled")
 		return
 	}
@@ -23,7 +24,7 @@ func lnurlp_response(w http.ResponseWriter, r *http.Request) {
 
 	// look up domain setting (HOST_DOMAIN)
 
-	domain := db_get_setting("HOST_DOMAIN")
+	domain := db.Get_setting("HOST_DOMAIN")
 	if r.Host != domain {
 		log.Warn("wrong host domain")
 		write_error(w)
@@ -32,7 +33,7 @@ func lnurlp_response(w http.ResponseWriter, r *http.Request) {
 
 	// look up name in database (table cards, field card_name)
 
-	card_count, err := db_get_card_count_for_name_lnurlp(name)
+	card_count, err := db.Get_card_count_for_name_lnurlp(name)
 	if err != nil {
 		log.Warn("could not get card count for name")
 		write_error(w)
