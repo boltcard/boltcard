@@ -4,10 +4,142 @@ import (
 	decodepay "github.com/fiatjaf/ln-decodepay"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"bytes"
+	"io"
 	"github.com/boltcard/boltcard/db"
 	"github.com/boltcard/boltcard/lnd"
 	"github.com/boltcard/boltcard/resp_err"
 )
+
+func lndhub_payment(w http.ResponseWriter, p *db.Payment) {
+
+	//get setting for LNDHUB_URL
+	lndhub_url := "https://" + db.Get_setting("LNDHUB_URL")
+
+	//get lndhub login details from database
+	c, err := db.Get_card_from_card_id(p.Card_id)
+	if err != nil {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
+		resp_err.Write(w)
+		return
+	}
+
+	//lndhub.auth API call
+	//the login JSON is held in the Card_name field
+	body := []byte(c.Card_name)
+
+	r, err := http.NewRequest("POST", lndhub_url + "/auth", bytes.NewBuffer(body))
+	if err != nil {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
+		resp_err.Write(w)
+		return
+	}
+
+	r.Header.Add("Access-Control-Allow-Origin", "*")
+	r.Header.Add("Content-Type", "application/json")
+
+	client := &http.Client{}
+	res, err := client.Do(r)
+	if err != nil {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
+		resp_err.Write(w)
+		return
+	}
+
+	defer res.Body.Close()
+
+	b, err2 := io.ReadAll(res.Body)
+	if err2 != nil {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
+		resp_err.Write(w)
+		return
+	}
+
+	log.Info(string(b))
+
+//	fmt.Println(string(b))
+
+	//lndhub.payinvoice API call
+}
+
+func lnd_payment(w http.ResponseWriter, bolt11 decodepay.Bolt11, p *db.Payment, param_pr string) {
+
+	// check amount limits
+	invoice_sats := int(bolt11.MSatoshi / 1000)
+
+	day_total_sats, err := db.Get_card_totals(p.Card_id)
+	if err != nil {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
+		resp_err.Write(w)
+		return
+	}
+
+	c, err := db.Get_card_from_card_id(p.Card_id)
+	if err != nil {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
+		resp_err.Write(w)
+		return
+	}
+
+	if invoice_sats > c.Tx_limit_sats {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("invoice_sats: ", invoice_sats)
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("tx_limit_sats: ", c.Tx_limit_sats)
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("over tx_limit_sats!")
+		resp_err.Write(w)
+		return
+	}
+
+	if day_total_sats+invoice_sats > c.Day_limit_sats {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("invoice_sats: ", invoice_sats)
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("day_total_sats: ", day_total_sats)
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("day_limit_sats: ", c.Day_limit_sats)
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("over day_limit_sats!")
+		resp_err.Write(w)
+		return
+	}
+
+	// check the card balance if marked as 'must stay above zero' (default)
+	//  i.e. cards.allow_negative_balance == 'N'
+	if c.Allow_negative_balance != "Y" {
+		card_total, err := db.Get_card_total_sats(p.Card_id)
+		if err != nil {
+			log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
+			resp_err.Write(w)
+			return
+		}
+
+		if card_total-invoice_sats < 0 {
+			log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn("not enough balance")
+			resp_err.Write(w)
+			return
+		}
+	}
+
+	log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("paying invoice")
+
+	// update paid_flag so we only attempt payment once
+	err = db.Update_payment_paid(p.Card_payment_id)
+	if err != nil {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
+		resp_err.Write(w)
+		return
+	}
+
+	// https://github.com/fiatjaf/lnurl-rfc/blob/luds/03.md
+	//
+	// LN SERVICE sends a {"status": "OK"} or
+	// {"status": "ERROR", "reason": "error details..."}
+	//  JSON response and then attempts to pay the invoices asynchronously.
+
+	go lnd.Pay_invoice(p.Card_payment_id, param_pr)
+
+	log.Debug("sending 'status OK' response")
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	jsonData := []byte(`{"status":"OK"}`)
+	w.Write(jsonData)
+}
 
 func Callback(w http.ResponseWriter, req *http.Request) {
 
@@ -87,81 +219,13 @@ func Callback(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// check amount limits
-
-	invoice_sats := int(bolt11.MSatoshi / 1000)
-
-	day_total_sats, err := db.Get_card_totals(p.Card_id)
-	if err != nil {
-		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
-		resp_err.Write(w)
-		return
+	//check if we are using LND or LNDHUB for payment
+	lndhub := db.Get_setting("FUNCTION_LNDHUB")
+	if lndhub == "ENABLE" {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("initiating lndhub payment")
+		lndhub_payment(w, p)
+	} else {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("initiating lnd payment")
+		lnd_payment(w, bolt11, p, param_pr)
 	}
-
-	c, err := db.Get_card_from_card_id(p.Card_id)
-	if err != nil {
-		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
-		resp_err.Write(w)
-		return
-	}
-
-	if invoice_sats > c.Tx_limit_sats {
-		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("invoice_sats: ", invoice_sats)
-		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("tx_limit_sats: ", c.Tx_limit_sats)
-		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("over tx_limit_sats!")
-		resp_err.Write(w)
-		return
-	}
-
-	if day_total_sats+invoice_sats > c.Day_limit_sats {
-		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("invoice_sats: ", invoice_sats)
-		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("day_total_sats: ", day_total_sats)
-		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("day_limit_sats: ", c.Day_limit_sats)
-		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("over day_limit_sats!")
-		resp_err.Write(w)
-		return
-	}
-
-	// check the card balance if marked as 'must stay above zero' (default)
-	//  i.e. cards.allow_negative_balance == 'N'
-
-	if c.Allow_negative_balance != "Y" {
-		card_total, err := db.Get_card_total_sats(p.Card_id)
-		if err != nil {
-			log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
-			resp_err.Write(w)
-			return
-		}
-
-		if card_total-invoice_sats < 0 {
-			log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn("not enough balance")
-			resp_err.Write(w)
-			return
-		}
-	}
-
-	log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("paying invoice")
-
-	// update paid_flag so we only attempt payment once
-	err = db.Update_payment_paid(p.Card_payment_id)
-	if err != nil {
-		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
-		resp_err.Write(w)
-		return
-	}
-
-	// https://github.com/fiatjaf/lnurl-rfc/blob/luds/03.md
-	//
-	// LN SERVICE sends a {"status": "OK"} or
-	// {"status": "ERROR", "reason": "error details..."}
-	//  JSON response and then attempts to pay the invoices asynchronously.
-
-	go lnd.Pay_invoice(p.Card_payment_id, param_pr)
-
-	log.Debug("sending 'status OK' response")
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	jsonData := []byte(`{"status":"OK"}`)
-	w.Write(jsonData)
 }
