@@ -1,13 +1,13 @@
 package main
 
 import (
+	"github.com/boltcard/boltcard/db"
+	"github.com/boltcard/boltcard/lnurlp"
+	"github.com/boltcard/boltcard/lnurlw"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"time"
-	"github.com/boltcard/boltcard/db"
-	"github.com/boltcard/boltcard/lnurlw"
-	"github.com/boltcard/boltcard/lnurlp"
 )
 
 var router = mux.NewRouter()
@@ -30,26 +30,51 @@ func main() {
 		DisableHTMLEscape: true,
 	})
 
+	var external_router = mux.NewRouter()
+	var internal_router = mux.NewRouter()
+
+	// external API
+
+	// ping
+	external_router.Path("/ping").Methods("GET").HandlerFunc(external_ping)
 	// createboltcard
-	router.Path("/new").Methods("GET").HandlerFunc(new_card_request)
+	external_router.Path("/new").Methods("GET").HandlerFunc(new_card_request)
 	// lnurlw for pos
-	router.Path("/ln").Methods("GET").HandlerFunc(lnurlw.Response)
-	router.Path("/cb").Methods("GET").HandlerFunc(lnurlw.Callback)
+	external_router.Path("/ln").Methods("GET").HandlerFunc(lnurlw.Response)
+	external_router.Path("/cb").Methods("GET").HandlerFunc(lnurlw.Callback)
 	// lnurlp for lightning address
-	router.Path("/.well-known/lnurlp/{name}").Methods("GET").HandlerFunc(lnurlp.Response)
-	router.Path("/lnurlp/{name}").Methods("GET").HandlerFunc(lnurlp.Callback)
+	external_router.Path("/.well-known/lnurlp/{name}").Methods("GET").HandlerFunc(lnurlp.Response)
+	external_router.Path("/lnurlp/{name}").Methods("GET").HandlerFunc(lnurlp.Callback)
+
+	// internal API
+	// this has no authentication and is not to be exposed publicly
+	// it exists for use on a private virtual network within a docker container
+
+	internal_router.Path("/ping").Methods("GET").HandlerFunc(internal_ping)
+	internal_router.Path("/createboltcard").Methods("GET").HandlerFunc(createboltcard)
+	internal_router.Path("/wipeboltcard").Methods("GET").HandlerFunc(wipeboltcard)
 
 	port := db.Get_setting("HOST_PORT")
 	if port == "" {
 		port = "9000"
 	}
 
-	srv := &http.Server{
-		Handler:      router,
+	external_server := &http.Server{
+		Handler:      external_router,
 		Addr:         ":" + port, // consider adding host
 		WriteTimeout: 30 * time.Second,
 		ReadTimeout:  30 * time.Second,
 	}
 
-	srv.ListenAndServe()
+	internal_server := &http.Server{
+		Handler:      internal_router,
+		Addr:         ":9001",
+		WriteTimeout: 5 * time.Second,
+		ReadTimeout:  5 * time.Second,
+	}
+
+	go external_server.ListenAndServe()
+	go internal_server.ListenAndServe()
+
+	select {}
 }
