@@ -65,6 +65,6 @@ func main() {
 		`}`
 
 	fmt.Println()
-	q, err := qrcode.New(qr, qrcode.Medium)
+	q, _ := qrcode.New(qr, qrcode.Medium)
 	fmt.Println(q.ToSmallString(false))
 }

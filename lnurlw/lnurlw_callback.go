@@ -48,16 +48,14 @@ func lndhub_payment(w http.ResponseWriter, p *db.Payment) {
 
 	defer res.Body.Close()
 
-	b, err2 := io.ReadAll(res.Body)
-	if err2 != nil {
+	b, err := io.ReadAll(res.Body)
+	if err != nil {
 		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
 		resp_err.Write(w)
 		return
 	}
 
 	log.Info(string(b))
-
-	//	fmt.Println(string(b))
 
 	//lndhub.payinvoice API call
 }
