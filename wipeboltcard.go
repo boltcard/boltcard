@@ -4,23 +4,15 @@ import (
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
+	"github.com/boltcard/boltcard/db"
+	"github.com/boltcard/boltcard/resp_err"
 )
 
-type card_wipe_info struct {
-	id  int
-	k0  string
-	k1  string
-	k2  string
-	k3  string
-	k4  string
-	uid string
-}
-
 func wipeboltcard(w http.ResponseWriter, r *http.Request) {
-	if db_get_setting("FUNCTION_INTERNAL_API") != "ENABLE" {
+	if db.Get_setting("FUNCTION_INTERNAL_API") != "ENABLE" {
 		msg := "wipeboltcard: internal API function is not enabled"
 		log.Debug(msg)
-		write_error_message(w, msg)
+		resp_err.Write_message(w, msg)
 		return
 	}
 
@@ -31,24 +23,24 @@ func wipeboltcard(w http.ResponseWriter, r *http.Request) {
 	if card_name == "" {
 		msg := "wipeboltcard: the card name must be set"
 		log.Warn(msg)
-		write_error_message(w, msg)
+		resp_err.Write_message(w, msg)
 		return
 	}
 
 	// check if card_name exists
 
-	card_count, err := db_get_card_name_count(card_name)
+	card_count, err := db.Get_card_name_count(card_name)
 
 	if card_count == 0 {
 		msg := "the card name does not exist in the database"
 		log.Warn(msg)
-		write_error_message(w, msg)
+		resp_err.Write_message(w, msg)
 		return
 	}
 
 	// set the card as wiped and disabled, get the keys
 
-	card_wipe_info_values, err := db_wipe_card(card_name)
+	card_wipe_info_values, err := db.Wipe_card(card_name)
 	if err != nil {
 		log.Warn(err.Error())
 		return
@@ -63,13 +55,13 @@ func wipeboltcard(w http.ResponseWriter, r *http.Request) {
 
 	jsonData := `{"status":"OK",` +
 		`"action": "wipe",` +
-		`"id": ` + strconv.Itoa(card_wipe_info_values.id) + `,` +
-		`"k0": "` + card_wipe_info_values.k0 + `",` +
-		`"k1": "` + card_wipe_info_values.k1 + `",` +
-		`"k2": "` + card_wipe_info_values.k2 + `",` +
-		`"k3": "` + card_wipe_info_values.k3 + `",` +
-		`"k4": "` + card_wipe_info_values.k4 + `",` +
-		`"uid": "` + card_wipe_info_values.uid + `",` +
+		`"id": ` + strconv.Itoa(card_wipe_info_values.Id) + `,` +
+		`"k0": "` + card_wipe_info_values.K0 + `",` +
+		`"k1": "` + card_wipe_info_values.K1 + `",` +
+		`"k2": "` + card_wipe_info_values.K2 + `",` +
+		`"k3": "` + card_wipe_info_values.K3 + `",` +
+		`"k4": "` + card_wipe_info_values.K4 + `",` +
+		`"uid": "` + card_wipe_info_values.Uid + `",` +
 		`"version": 1}`
 
 	// log the response

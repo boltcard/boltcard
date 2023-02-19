@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"github.com/boltcard/boltcard/db"
+	"github.com/boltcard/boltcard/resp_err"
 )
 
 /**
@@ -47,7 +49,7 @@ func new_card_request(w http.ResponseWriter, req *http.Request) {
 	params_a, ok := req.URL.Query()["a"]
 	if !ok || len(params_a[0]) < 1 {
 		log.Debug("a not found")
-		write_error(w)
+		resp_err.Write(w)
 		return
 	}
 
@@ -55,33 +57,33 @@ func new_card_request(w http.ResponseWriter, req *http.Request) {
 
 	lnurlw_base := "lnurlw://" + req.Host + "/ln"
 
-	c, err := db_get_new_card(a)
+	c, err := db.Get_new_card(a)
 
 	if err == sql.ErrNoRows {
 		log.Debug(err)
-		write_error_message(w, "one time code was used or card was wiped or card does not exist")
+		resp_err.Write_message(w, "one time code was used or card was wiped or card does not exist")
 		return
 	}
 
 	if err != nil {
 		log.Warn(err)
-		write_error(w)
+		resp_err.Write(w)
 		return
 	}
 
-	k1_decrypt_key := db_get_setting("AES_DECRYPT_KEY")
+	k1_decrypt_key := db.Get_setting("AES_DECRYPT_KEY")
 
 	response := NewCardResponse{}
 	response.PROTOCOL_NAME = "create_bolt_card_response"
 	response.PROTOCOL_VERSION = 2
-	response.CARD_NAME = c.card_name
+	response.CARD_NAME = c.Card_name
 	response.LNURLW_BASE = lnurlw_base
-	response.K0 = c.k0_auth_key
+	response.K0 = c.K0_auth_key
 	response.K1 = k1_decrypt_key
-	response.K2 = c.k2_cmac_key
-	response.K3 = c.k3
-	response.K4 = c.k4
-	response.UID_PRIVACY = c.uid_privacy
+	response.K2 = c.K2_cmac_key
+	response.K3 = c.K3
+	response.K4 = c.K4
+	response.UID_PRIVACY = c.Uid_privacy
 
 	log.SetFormatter(&log.JSONFormatter{
 		DisableHTMLEscape: true,
@@ -89,7 +91,7 @@ func new_card_request(w http.ResponseWriter, req *http.Request) {
 	jsonData, err := json.Marshal(response)
 	if err != nil {
 		log.Warn(err)
-		write_error(w)
+		resp_err.Write(w)
 		return
 	}
 

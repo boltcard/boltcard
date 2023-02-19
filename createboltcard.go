@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"github.com/boltcard/boltcard/db"
+	"github.com/boltcard/boltcard/resp_err"
 )
 
 func random_hex() string {
@@ -21,10 +23,10 @@ func random_hex() string {
 }
 
 func createboltcard(w http.ResponseWriter, r *http.Request) {
-	if db_get_setting("FUNCTION_INTERNAL_API") != "ENABLE" {
+	if db.Get_setting("FUNCTION_INTERNAL_API") != "ENABLE" {
 		msg := "createboltcard: internal API function is not enabled"
 		log.Debug(msg)
-		write_error_message(w, msg)
+		resp_err.Write_message(w, msg)
 		return
 	}
 
@@ -33,7 +35,7 @@ func createboltcard(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		msg := "createboltcard: tx_max is not a valid integer"
 		log.Warn(msg)
-		write_error_message(w, msg)
+		resp_err.Write_message(w, msg)
 		return
 	}
 
@@ -42,7 +44,7 @@ func createboltcard(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		msg := "createboltcard: day_max is not a valid integer"
 		log.Warn(msg)
-		write_error_message(w, msg)
+		resp_err.Write_message(w, msg)
 		return
 	}
 
@@ -51,7 +53,7 @@ func createboltcard(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		msg := "createboltcard: enable is not a valid boolean"
 		log.Warn(msg)
-		write_error_message(w, msg)
+		resp_err.Write_message(w, msg)
 		return
 	}
 
@@ -62,7 +64,7 @@ func createboltcard(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		msg := "createboltcard: uid_privacy is not a valid boolean"
 		log.Warn(msg)
-		write_error_message(w, msg)
+		resp_err.Write_message(w, msg)
 		return
 	}
 
@@ -71,13 +73,13 @@ func createboltcard(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		msg := "createboltcard: allow_neg_bal is not a valid boolean"
 		log.Warn(msg)
-		write_error_message(w, msg)
+		resp_err.Write_message(w, msg)
 		return
 	}
 
 	// check if card_name already exists
 
-	card_count, err := db_get_card_name_count(card_name)
+	card_count, err := db.Get_card_name_count(card_name)
 	if err != nil {
 		log.Warn(err.Error())
 		return
@@ -86,7 +88,7 @@ func createboltcard(w http.ResponseWriter, r *http.Request) {
 	if card_count > 0 {
 		msg := "createboltcard: the card name already exists in the database"
 		log.Warn(msg)
-		write_error_message(w, msg)
+		resp_err.Write_message(w, msg)
 		return
 	}
 
@@ -107,7 +109,7 @@ func createboltcard(w http.ResponseWriter, r *http.Request) {
 
 	// create the new card record
 
-	err = db_insert_card(one_time_code, k0_auth_key, k2_cmac_key, k3, k4,
+	err = db.Insert_card(one_time_code, k0_auth_key, k2_cmac_key, k3, k4,
 		tx_max, day_max, enable_flag, card_name,
 		uid_privacy_flag, allow_neg_bal_flag)
 	if err != nil {
@@ -117,7 +119,7 @@ func createboltcard(w http.ResponseWriter, r *http.Request) {
 
 	// return the URI + one_time_code
 
-	hostdomain := db_get_setting("HOST_DOMAIN")
+	hostdomain := db.Get_setting("HOST_DOMAIN")
 	url := ""
 	if strings.HasSuffix(hostdomain, ".onion") {
 		url = "http://" + hostdomain + "/new?a=" + one_time_code

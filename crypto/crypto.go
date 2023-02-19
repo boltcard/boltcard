@@ -1,4 +1,4 @@
-package main
+package crypto
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 	"github.com/aead/cmac"
 )
 
-func create_k1() (string, error) {
+func Create_k1() (string, error) {
 
 	// 16 bytes = 128 bits
 	b := make([]byte, 16)
@@ -24,7 +24,7 @@ func create_k1() (string, error) {
 }
 
 // decrypt p with aes_dec
-func crypto_aes_decrypt(key_sdm_file_read []byte, ba_p []byte) ([]byte, error) {
+func Aes_decrypt(key_sdm_file_read []byte, ba_p []byte) ([]byte, error) {
 
 	dec_p := make([]byte, 16)
 	iv := make([]byte, 16)
@@ -38,7 +38,7 @@ func crypto_aes_decrypt(key_sdm_file_read []byte, ba_p []byte) ([]byte, error) {
 	return dec_p, nil
 }
 
-func crypto_aes_cmac(key_sdm_file_read_mac []byte, sv2 []byte, ba_c []byte) (bool, error) {
+func Aes_cmac(key_sdm_file_read_mac []byte, sv2 []byte, ba_c []byte) (bool, error) {
 
 	c2, err := aes.NewCipher(key_sdm_file_read_mac)
 	if err != nil {

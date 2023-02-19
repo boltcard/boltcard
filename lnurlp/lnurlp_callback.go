@@ -1,4 +1,4 @@
-package main
+package lnurlp
 
 import (
 	"encoding/hex"
@@ -6,10 +6,13 @@ import (
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
+	"github.com/boltcard/boltcard/lnd"
+	"github.com/boltcard/boltcard/db"
+	"github.com/boltcard/boltcard/resp_err"
 )
 
-func lnurlp_callback(w http.ResponseWriter, r *http.Request) {
-	if db_get_setting("FUNCTION_LNURLP") != "ENABLE" {
+func Callback(w http.ResponseWriter, r *http.Request) {
+	if db.Get_setting("FUNCTION_LNURLP") != "ENABLE" {
 		log.Debug("LNURLp function is not enabled")
 		return
 	}
@@ -17,10 +20,10 @@ func lnurlp_callback(w http.ResponseWriter, r *http.Request) {
 	name := mux.Vars(r)["name"]
 	amount := r.URL.Query().Get("amount")
 
-	card_id, err := db_get_card_id_for_name(name)
+	card_id, err := db.Get_card_id_for_name(name)
 	if err != nil {
 		log.Info("card name not found")
-		write_error(w)
+		resp_err.Write(w)
 		return
 	}
 
@@ -33,38 +36,38 @@ func lnurlp_callback(w http.ResponseWriter, r *http.Request) {
 			"req.Host": r.Host,
 		}).Info("lnurlp_callback")
 
-	domain := db_get_setting("HOST_DOMAIN")
+	domain := db.Get_setting("HOST_DOMAIN")
 	if r.Host != domain {
 		log.Warn("wrong host domain")
-		write_error(w)
+		resp_err.Write(w)
 		return
 	}
 
 	amount_msat, err := strconv.ParseInt(amount, 10, 64)
 	if err != nil {
 		log.Warn("amount is not a valid integer")
-		write_error(w)
+		resp_err.Write(w)
 		return
 	}
 
 	amount_sat := amount_msat / 1000
 
 	metadata := "[[\"text/identifier\",\"" + name + "@" + domain + "\"],[\"text/plain\",\"bolt card deposit\"]]"
-	pr, r_hash, err := add_invoice(amount_sat, metadata)
+	pr, r_hash, err := lnd.Add_invoice(amount_sat, metadata)
 	if err != nil {
 		log.Warn("could not add_invoice")
-		write_error(w)
+		resp_err.Write(w)
 		return
 	}
 
-	err = db_insert_receipt(card_id, pr, hex.EncodeToString(r_hash), amount_msat)
+	err = db.Insert_receipt(card_id, pr, hex.EncodeToString(r_hash), amount_msat)
 	if err != nil {
 		log.Warn(err)
-		write_error(w)
+		resp_err.Write(w)
 		return
 	}
 
-	go monitor_invoice_state(r_hash)
+	go lnd.Monitor_invoice_state(r_hash)
 
 	log.Debug("sending 'status OK' response")
 
