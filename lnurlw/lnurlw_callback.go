@@ -9,24 +9,24 @@ import (
 	decodepay "github.com/fiatjaf/ln-decodepay"
 	log "github.com/sirupsen/logrus"
 	"io"
-	"strings"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type LndhubAuthRequest struct {
-	Login		string	`json:"login"`
-	Password	string	`json:"password"`
+	Login    string `json:"login"`
+	Password string `json:"password"`
 }
 
 type LndhubAuthResponse struct {
-	RefreshToken	string	`json:"refresh_token"`
-	AccessToken 	string	`json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+	AccessToken  string `json:"access_token"`
 }
 
-type LndhubPayInvoiceRequest	struct {
-	Invoice		string	`json:"invoice"`
-	FreeAmount	string	`json:"freeamount"`
+type LndhubPayInvoiceRequest struct {
+	Invoice    string `json:"invoice"`
+	FreeAmount string `json:"freeamount"`
 }
 
 func lndhub_payment(w http.ResponseWriter, p *db.Payment, bolt11 decodepay.Bolt11, param_pr string) {
@@ -124,7 +124,7 @@ func lndhub_payment(w http.ResponseWriter, p *db.Payment, bolt11 decodepay.Bolt1
 
 	req.Header.Add("Access-Control-Allow-Origin", "*")
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Authorization", "Bearer " + auth_keys.AccessToken)
+	req.Header.Add("Authorization", "Bearer "+auth_keys.AccessToken)
 
 	res2, err := client.Do(req)
 	if err != nil {
@@ -144,14 +144,14 @@ func lndhub_payment(w http.ResponseWriter, p *db.Payment, bolt11 decodepay.Bolt1
 
 	log.Info(string(b2))
 
-//	var auth_keys LndhubAuthResponse
+	//	var auth_keys LndhubAuthResponse
 
-//	err = json.Unmarshal([]byte(b), &auth_keys)
-//	if err != nil {
-//		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
-//		resp_err.Write(w)
-//		return
-//	}
+	//	err = json.Unmarshal([]byte(b), &auth_keys)
+	//	if err != nil {
+	//		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
+	//		resp_err.Write(w)
+	//		return
+	//	}
 
 }
 
