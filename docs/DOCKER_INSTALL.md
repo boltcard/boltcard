@@ -28,6 +28,15 @@ $ docker volume create caddy_data
 $ docker compose up
 ```
 
+### run boltcard server with own reverse proxy
+If you already have reverse proxy in your enviroment which controls/terminates TLS connections, Boltcard server wont be ready to use, because of existence of own reverse proxy (Caddy). Caddy wont be abble to obtain TLS certificate for your domain name. Run different docker-compose, that will start Boltcard server without Caddy and your reverse proxy will handle TLS.
+
+```
+// add -d option for detached mode
+$ docker-compose up -f docker-compose-own-reverse-proxy.yml
+```
+
+
 ### stop docker
 ```
 $ docker compose down
