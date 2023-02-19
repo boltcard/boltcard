@@ -23,7 +23,8 @@ The simplest way to understand and set up your own system is to read the main do
 | Document | Description |
 | --- | --- |
 | [Service Install](docs/INSTALL.md) | Bolt card service installation |
-| [Manual Card Creation](docs/CARD_MANUAL.md) | Bolt card creation using NXP TagXplorer software|
+| [Manual Card Creation](docs/CARD_MANUAL.md) | Bolt card creation using NXP TagXplorer software |
+| [LndHub Payments](docs/LNDHUB.md) | How to use LndHub |
 | [FAQ](docs/FAQ.md) | Frequently asked questions |
 
 ## Telegram group
