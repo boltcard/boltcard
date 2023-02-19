@@ -2,13 +2,13 @@ package lnurlp
 
 import (
 	"encoding/hex"
+	"github.com/boltcard/boltcard/db"
+	"github.com/boltcard/boltcard/lnd"
+	"github.com/boltcard/boltcard/resp_err"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
-	"github.com/boltcard/boltcard/lnd"
-	"github.com/boltcard/boltcard/db"
-	"github.com/boltcard/boltcard/resp_err"
 )
 
 func Callback(w http.ResponseWriter, r *http.Request) {

@@ -1,14 +1,14 @@
 package lnurlw
 
 import (
-	decodepay "github.com/fiatjaf/ln-decodepay"
-	log "github.com/sirupsen/logrus"
-	"net/http"
 	"bytes"
-	"io"
 	"github.com/boltcard/boltcard/db"
 	"github.com/boltcard/boltcard/lnd"
 	"github.com/boltcard/boltcard/resp_err"
+	decodepay "github.com/fiatjaf/ln-decodepay"
+	log "github.com/sirupsen/logrus"
+	"io"
+	"net/http"
 )
 
 func lndhub_payment(w http.ResponseWriter, p *db.Payment) {
@@ -28,7 +28,7 @@ func lndhub_payment(w http.ResponseWriter, p *db.Payment) {
 	//the login JSON is held in the Card_name field
 	body := []byte(c.Card_name)
 
-	r, err := http.NewRequest("POST", lndhub_url + "/auth", bytes.NewBuffer(body))
+	r, err := http.NewRequest("POST", lndhub_url+"/auth", bytes.NewBuffer(body))
 	if err != nil {
 		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
 		resp_err.Write(w)
@@ -57,7 +57,7 @@ func lndhub_payment(w http.ResponseWriter, p *db.Payment) {
 
 	log.Info(string(b))
 
-//	fmt.Println(string(b))
+	//	fmt.Println(string(b))
 
 	//lndhub.payinvoice API call
 }

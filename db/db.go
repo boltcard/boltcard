@@ -47,13 +47,13 @@ type Transaction struct {
 }
 
 type Card_wipe_info struct {
-        Id  int
-        K0  string
-        K1  string
-        K2  string
-        K3  string
-        K4  string
-        Uid string
+	Id  int
+	K0  string
+	K1  string
+	K2  string
+	K3  string
+	K4  string
+	Uid string
 }
 
 func open() (*sql.DB, error) {

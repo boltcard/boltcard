@@ -1,13 +1,13 @@
 package main
 
 import (
+	"github.com/boltcard/boltcard/db"
+	"github.com/boltcard/boltcard/lnurlp"
+	"github.com/boltcard/boltcard/lnurlw"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"time"
-	"github.com/boltcard/boltcard/db"
-	"github.com/boltcard/boltcard/lnurlw"
-	"github.com/boltcard/boltcard/lnurlp"
 )
 
 var router = mux.NewRouter()

@@ -1,11 +1,11 @@
 package main
 
 import (
+	"github.com/boltcard/boltcard/db"
+	"github.com/boltcard/boltcard/resp_err"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
-	"github.com/boltcard/boltcard/db"
-	"github.com/boltcard/boltcard/resp_err"
 )
 
 func wipeboltcard(w http.ResponseWriter, r *http.Request) {
