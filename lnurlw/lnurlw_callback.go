@@ -2,16 +2,34 @@ package lnurlw
 
 import (
 	"bytes"
+	"encoding/json"
 	"github.com/boltcard/boltcard/db"
 	"github.com/boltcard/boltcard/lnd"
 	"github.com/boltcard/boltcard/resp_err"
 	decodepay "github.com/fiatjaf/ln-decodepay"
 	log "github.com/sirupsen/logrus"
 	"io"
+	"strings"
 	"net/http"
+	"strconv"
 )
 
-func lndhub_payment(w http.ResponseWriter, p *db.Payment) {
+type LndhubAuthRequest struct {
+	Login		string	`json:"login"`
+	Password	string	`json:"password"`
+}
+
+type LndhubAuthResponse struct {
+	RefreshToken	string	`json:"refresh_token"`
+	AccessToken 	string	`json:"access_token"`
+}
+
+type LndhubPayInvoiceRequest	struct {
+	Invoice		string	`json:"invoice"`
+	FreeAmount	string	`json:"freeamount"`
+}
+
+func lndhub_payment(w http.ResponseWriter, p *db.Payment, bolt11 decodepay.Bolt11, param_pr string) {
 
 	//get setting for LNDHUB_URL
 	lndhub_url := "https://" + db.Get_setting("LNDHUB_URL")
@@ -26,41 +44,118 @@ func lndhub_payment(w http.ResponseWriter, p *db.Payment) {
 
 	//lndhub.auth API call
 	//the login JSON is held in the Card_name field
-	body := []byte(c.Card_name)
+	// as "login:password"
+	card_name_parts := strings.Split(c.Card_name, ":")
 
-	r, err := http.NewRequest("POST", lndhub_url+"/auth", bytes.NewBuffer(body))
+	if len(card_name_parts) != 2 {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
+		resp_err.Write(w)
+		return
+	}
+
+	if len(card_name_parts[0]) != 20 || len(card_name_parts[1]) != 20 {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
+		resp_err.Write(w)
+		return
+	}
+
+	var lhAuthRequest LndhubAuthRequest
+	lhAuthRequest.Login = card_name_parts[0]
+	lhAuthRequest.Password = card_name_parts[1]
+
+	authReq, err := json.Marshal(lhAuthRequest)
+	log.Info(string(authReq))
+
+	req_auth, err := http.NewRequest("POST", lndhub_url+"/auth", bytes.NewBuffer(authReq))
 	if err != nil {
 		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
 		resp_err.Write(w)
 		return
 	}
 
-	r.Header.Add("Access-Control-Allow-Origin", "*")
-	r.Header.Add("Content-Type", "application/json")
+	req_auth.Header.Add("Access-Control-Allow-Origin", "*")
+	req_auth.Header.Add("Content-Type", "application/json")
 
 	client := &http.Client{}
-	res, err := client.Do(r)
+	resp_auth, err := client.Do(req_auth)
 	if err != nil {
 		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
 		resp_err.Write(w)
 		return
 	}
 
-	defer res.Body.Close()
+	defer resp_auth.Body.Close()
 
-	b, err := io.ReadAll(res.Body)
+	resp_auth_bytes, err := io.ReadAll(resp_auth.Body)
 	if err != nil {
 		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
 		resp_err.Write(w)
 		return
 	}
 
-	log.Info(string(b))
+	var auth_keys LndhubAuthResponse
+
+	err = json.Unmarshal([]byte(resp_auth_bytes), &auth_keys)
+	if err != nil {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
+		resp_err.Write(w)
+		return
+	}
 
 	//lndhub.payinvoice API call
+	var payInvoiceRequest LndhubPayInvoiceRequest
+	payInvoiceRequest.Invoice = param_pr
+	payInvoiceRequest.FreeAmount = strconv.Itoa(int(bolt11.MSatoshi / 1000))
+
+	req_payinvoice, err := json.Marshal(payInvoiceRequest)
+	log.Info(string(req_payinvoice))
+	if err != nil {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
+		resp_err.Write(w)
+		return
+	}
+
+	req, err := http.NewRequest("POST", lndhub_url+"/payinvoice", bytes.NewBuffer(req_payinvoice))
+	if err != nil {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
+		resp_err.Write(w)
+		return
+	}
+
+	req.Header.Add("Access-Control-Allow-Origin", "*")
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Bearer " + auth_keys.AccessToken)
+
+	res2, err := client.Do(req)
+	if err != nil {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
+		resp_err.Write(w)
+		return
+	}
+
+	defer res2.Body.Close()
+
+	b2, err := io.ReadAll(res2.Body)
+	if err != nil {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
+		resp_err.Write(w)
+		return
+	}
+
+	log.Info(string(b2))
+
+//	var auth_keys LndhubAuthResponse
+
+//	err = json.Unmarshal([]byte(b), &auth_keys)
+//	if err != nil {
+//		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
+//		resp_err.Write(w)
+//		return
+//	}
+
 }
 
-func lnd_payment(w http.ResponseWriter, bolt11 decodepay.Bolt11, p *db.Payment, param_pr string) {
+func lnd_payment(w http.ResponseWriter, p *db.Payment, bolt11 decodepay.Bolt11, param_pr string) {
 
 	// check amount limits
 	invoice_sats := int(bolt11.MSatoshi / 1000)
@@ -221,9 +316,9 @@ func Callback(w http.ResponseWriter, req *http.Request) {
 	lndhub := db.Get_setting("FUNCTION_LNDHUB")
 	if lndhub == "ENABLE" {
 		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("initiating lndhub payment")
-		lndhub_payment(w, p)
+		lndhub_payment(w, p, bolt11, param_pr)
 	} else {
 		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("initiating lnd payment")
-		lnd_payment(w, bolt11, p, param_pr)
+		lnd_payment(w, p, bolt11, param_pr)
 	}
 }
