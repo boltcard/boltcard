@@ -20,7 +20,7 @@ CREATE TABLE cards (
 	tx_limit_sats INT NOT NULL,
 	day_limit_sats INT NOT NULL,
 	lnurlp_enable CHAR(1) NOT NULL DEFAULT 'N',
-	card_name VARCHAR(100) UNIQUE NOT NULL DEFAULT '',
+	card_name VARCHAR(100) NOT NULL DEFAULT '',
 	email_address VARCHAR(100) DEFAULT '',
 	email_enable CHAR(1) NOT NULL DEFAULT 'N',
 	uid_privacy CHAR(1) NOT NULL DEFAULT 'N',
