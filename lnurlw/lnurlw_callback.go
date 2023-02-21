@@ -32,7 +32,7 @@ type LndhubPayInvoiceRequest struct {
 func lndhub_payment(w http.ResponseWriter, p *db.Payment, bolt11 decodepay.Bolt11, param_pr string) {
 
 	//get setting for LNDHUB_URL
-	lndhub_url := "https://" + db.Get_setting("LNDHUB_URL")
+	lndhub_url := db.Get_setting("LNDHUB_URL")
 
 	//get lndhub login details from database
 	c, err := db.Get_card_from_card_id(p.Card_id)
