@@ -2,9 +2,9 @@ package main
 
 import (
 	"github.com/boltcard/boltcard/db"
+	"github.com/boltcard/boltcard/internalapi"
 	"github.com/boltcard/boltcard/lnurlp"
 	"github.com/boltcard/boltcard/lnurlw"
-	"github.com/boltcard/boltcard/internalapi"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"net/http"
