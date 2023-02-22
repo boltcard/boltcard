@@ -834,3 +834,40 @@ func Wipe_card(card_name string) (*Card_wipe_info, error) {
 
 	return &card_wipe_info, nil
 }
+
+func Update_card(card_name string, tx_max int, lnurlw_enable bool) error {
+
+	lnurlw_enable_yn := "N"
+	if lnurlw_enable {
+		lnurlw_enable_yn = "Y"
+	}
+
+	db, err := open()
+
+	if err != nil {
+		return err
+	}
+
+	defer db.Close()
+
+	sqlStatement := `UPDATE cards SET tx_max = $2, lnurlw_enable = $3 ` +
+		`WHERE card_name = $1;`
+
+	res, err := db.Exec(sqlStatement, card_name, tx_max, lnurlw_enable_yn)
+
+	if err != nil {
+		return err
+	}
+
+	count, err := res.RowsAffected()
+
+	if err != nil {
+		return err
+	}
+
+	if count != 1 {
+		return errors.New("not one card record updated")
+	}
+
+	return nil
+}

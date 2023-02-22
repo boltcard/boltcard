@@ -1,17 +1,14 @@
-package main
+package internalapi
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"github.com/boltcard/boltcard/db"
 	"github.com/boltcard/boltcard/resp_err"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
-	"strings"
 )
 
-func updateboltcard(w http.ResponseWriter, r *http.Request) {
+func Updateboltcard(w http.ResponseWriter, r *http.Request) {
 	if db.Get_setting("FUNCTION_INTERNAL_API") != "ENABLE" {
 		msg := "updateboltcard: internal API function is not enabled"
 		log.Debug(msg)
@@ -39,8 +36,8 @@ func updateboltcard(w http.ResponseWriter, r *http.Request) {
 
 	card_name := r.URL.Query().Get("card_name")
 
-	// check if card_name already exists
-//TODO: allow multiple deactivated cards with the same card_name
+	// check if card_name exists
+
 	card_count, err := db.Get_card_name_count(card_name)
 	if err != nil {
 		log.Warn(err.Error())
@@ -60,14 +57,6 @@ func updateboltcard(w http.ResponseWriter, r *http.Request) {
 		"card_name": card_name, "tx_max": tx_max,
 		"enable": enable_flag}).Info("createboltcard API request")
 
-	// create the keys
-
-	one_time_code := random_hex()
-	k0_auth_key := random_hex()
-	k2_cmac_key := random_hex()
-	k3 := random_hex()
-	k4 := random_hex()
-
 	// update the card record
 
 	err = db.Update_card(card_name, tx_max, enable_flag)
@@ -76,24 +65,9 @@ func updateboltcard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// return the URI + one_time_code
+	// send a response
 
-	hostdomain := db.Get_setting("HOST_DOMAIN")
-	url := ""
-	if strings.HasSuffix(hostdomain, ".onion") {
-		url = "http://" + hostdomain + "/new?a=" + one_time_code
-	} else {
-		url = "https://" + hostdomain + "/new?a=" + one_time_code
-	}
-
-	// log the response
-
-	log.WithFields(log.Fields{
-		"card_name": card_name, "url": url}).Info("updateboltcard API response")
-
-	jsonData := []byte(`{"status":"OK",` +
-		`"url":"` + url + `"}`)
-
+	jsonData := []byte(`{"status":"OK"}`)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)

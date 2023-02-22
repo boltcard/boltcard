@@ -1,4 +1,4 @@
-package main
+package internalapi
 
 import (
 	"github.com/boltcard/boltcard/db"
@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-func wipeboltcard(w http.ResponseWriter, r *http.Request) {
+func Wipeboltcard(w http.ResponseWriter, r *http.Request) {
 	if db.Get_setting("FUNCTION_INTERNAL_API") != "ENABLE" {
 		msg := "wipeboltcard: internal API function is not enabled"
 		log.Debug(msg)
