@@ -34,3 +34,13 @@ jobs:
 
     - name: Test
       run: go test -v ./...
+
+  build-docker-images:
+    runs-on: ubuntu-latest
+    steps:
+
+    - uses: actions/checkout@v3
+
+    - name: Build the Docker image
+      run: docker compose build
+  
