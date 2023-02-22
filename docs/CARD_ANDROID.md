@@ -37,13 +37,10 @@ export DB_NAME=card_db
 echo "writing host_domain to env vars"
 
 export HOST_DOMAIN=card.yourdomain.com
-```
-- enter the `createboltcard` directory
-- `$ go build`
-- run the creation program
-  - `./createboltcard` to see options
-  - `./createboltcard -enable -allow_neg_bal -tx_max=1000 -day_max=10000 -name=card_1` for example
-- this will give you a one-time link in text and QR code form
+
+- use the internal API to create a card
+- `$ curl 'localhost:9001/createboltcard?card_name=card_5&enable=false&tx_max=1000&day_max=10000&uid_privacy=true&allow_neg_bal=true'`
+- this will give you a one-time link
 
 on the app
 - click `scan QR code`
@@ -55,3 +52,14 @@ on the app
 - monitor the bolt card service logs
 - `$ journalctl -u boltcard.service -f`
 - use a PoS setup to read the bolt card, e.g. [Breez wallet](https://breez.technology/)
+
+### Update the card settings
+
+- use the internal API to update settings for a card
+- `$ curl 'localhost:9001/updateboltcard?card_name=card_5&enable=true&tx_max=100'`
+
+### Wipe a card
+
+- use the internal API to wipe a card
+- `$ curl 'localhost:9001/wipeboltcard?card_name=card_5'`
+- this will mark the card as wiped and return the keys for the app to wipe the card

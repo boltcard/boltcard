@@ -16,10 +16,10 @@ func Updateboltcard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tx_limit_sats_str := r.URL.Query().Get("tx_limit_sats")
-	tx_limit_sats, err := strconv.Atoi(tx_limit_sats_str)
+	tx_max_str := r.URL.Query().Get("tx_max")
+	tx_max, err := strconv.Atoi(tx_max_str)
 	if err != nil {
-		msg := "updateboltcard: tx_limit_sats is not a valid integer"
+		msg := "updateboltcard: tx_max is not a valid integer"
 		log.Warn(msg)
 		resp_err.Write_message(w, msg)
 		return
@@ -54,12 +54,12 @@ func Updateboltcard(w http.ResponseWriter, r *http.Request) {
 	// log the request
 
 	log.WithFields(log.Fields{
-		"card_name": card_name, "tx_limit_sats": tx_limit_sats,
+		"card_name": card_name, "tx_max": tx_max,
 		"enable": enable_flag}).Info("updateboltcard API request")
 
 	// update the card record
 
-	err = db.Update_card(card_name, tx_limit_sats, enable_flag)
+	err = db.Update_card(card_name, tx_max, enable_flag)
 	if err != nil {
 		log.Warn(err.Error())
 		return
