@@ -54,7 +54,7 @@ $ docker logs [OPTIONS] CONTAINER
 
 Run `$ docker ps` to list containers and get container names/ids
 
-#### running create bolt card command
--  `docker exec boltcard_main createboltcard/createboltcard`  to see options
--  `docker exec boltcard_main createboltcard/createboltcard -enable -allow_neg_bal -tx_max=1000 -day_max=10000 -name=card_1`  for example
--  this will give you a one-time link in text and QR code form
+#### running internal API commands
+-  `docker exec boltcard_main curl 'localhost:9001/createboltcard?card_name=card_5&enable=false&tx_max=1000&day_max=10000&uid_privacy=true&allow_neg_bal=true'`
+-  `docker exec boltcard_main curl 'localhost:9001/updateboltcard?card_name=card_5&enable=true&tx_max=100'`
+-  `docker exec boltcard_main curl 'localhost:9001/wipeboltcard?card_name=card_5'`
