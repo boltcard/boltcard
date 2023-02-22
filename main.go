@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/boltcard/boltcard/db"
+	"github.com/boltcard/boltcard/internalapi"
 	"github.com/boltcard/boltcard/lnurlp"
 	"github.com/boltcard/boltcard/lnurlw"
 	"github.com/gorilla/mux"
@@ -50,9 +51,10 @@ func main() {
 	// this has no authentication and is not to be exposed publicly
 	// it exists for use on a private virtual network within a docker container
 
-	internal_router.Path("/ping").Methods("GET").HandlerFunc(internal_ping)
-	internal_router.Path("/createboltcard").Methods("GET").HandlerFunc(createboltcard)
-	internal_router.Path("/wipeboltcard").Methods("GET").HandlerFunc(wipeboltcard)
+	internal_router.Path("/ping").Methods("GET").HandlerFunc(internalapi.Internal_ping)
+	internal_router.Path("/createboltcard").Methods("GET").HandlerFunc(internalapi.Createboltcard)
+	internal_router.Path("/updateboltcard").Methods("GET").HandlerFunc(internalapi.Updateboltcard)
+	internal_router.Path("/wipeboltcard").Methods("GET").HandlerFunc(internalapi.Wipeboltcard)
 
 	port := db.Get_setting("HOST_PORT")
 	if port == "" {

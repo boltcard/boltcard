@@ -1,4 +1,4 @@
-package main
+package internalapi
 
 import (
 	"crypto/rand"
@@ -22,7 +22,7 @@ func random_hex() string {
 	return hex.EncodeToString(b)
 }
 
-func createboltcard(w http.ResponseWriter, r *http.Request) {
+func Createboltcard(w http.ResponseWriter, r *http.Request) {
 	if db.Get_setting("FUNCTION_INTERNAL_API") != "ENABLE" {
 		msg := "createboltcard: internal API function is not enabled"
 		log.Debug(msg)

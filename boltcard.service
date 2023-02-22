@@ -17,7 +17,7 @@ Environment="DB_USER=cardapp"
 Environment="DB_PASSWORD=database_password"
 Environment="DB_NAME=card_db"
 
-ExecStart=/bin/bash /home/ubuntu/boltcard/s_launch
+ExecStart=/bin/bash /home/ubuntu/boltcard/script/s_launch
 
 [Install]
 WantedBy=multi-user.target
