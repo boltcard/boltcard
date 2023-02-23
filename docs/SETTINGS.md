@@ -29,4 +29,4 @@ Here are the descriptions of values available to use in the `settings` table:
 | EMAIL_MAX_TXS | | maximum number of transactions to include in the email body |
 | FUNCTION_LNDHUB | DISABLE | system level switch for using LNDHUB in place of LND |
 | LNDHUB_URL | | URL for the LNDHUB service |
-| FUNCTION_INTERNAL_API | | system level switch for activating the internal API |
+| FUNCTION_INTERNAL_API | DISABLE | system level switch for activating the internal API |
