@@ -835,7 +835,7 @@ func Wipe_card(card_name string) (*Card_wipe_info, error) {
 	return &card_wipe_info, nil
 }
 
-func Update_card(card_name string, tx_limit_sats int, lnurlw_enable bool) error {
+func Update_card(card_name string, lnurlw_enable bool, tx_limit_sats int, day_limit_sats int) error {
 
 	lnurlw_enable_yn := "N"
 	if lnurlw_enable {
@@ -850,10 +850,10 @@ func Update_card(card_name string, tx_limit_sats int, lnurlw_enable bool) error 
 
 	defer db.Close()
 
-	sqlStatement := `UPDATE cards SET tx_limit_sats = $2, lnurlw_enable = $3 ` +
+	sqlStatement := `UPDATE cards SET lnurlw_enable = $2, tx_limit_sats = $3, day_limit_sats = $4 ` +
 		`WHERE card_name = $1;`
 
-	res, err := db.Exec(sqlStatement, card_name, tx_limit_sats, lnurlw_enable_yn)
+	res, err := db.Exec(sqlStatement, card_name, lnurlw_enable_yn, tx_limit_sats, day_limit_sats)
 
 	if err != nil {
 		return err
