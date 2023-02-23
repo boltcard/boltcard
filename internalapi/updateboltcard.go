@@ -17,6 +17,15 @@ func Updateboltcard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	enable_flag_str := r.URL.Query().Get("enable")
+	enable_flag, err := strconv.ParseBool(enable_flag_str)
+	if err != nil {
+		msg := "updateboltcard: enable is not a valid boolean"
+		log.Warn(msg)
+		resp_err.Write_message(w, msg)
+		return
+	}
+
 	tx_max_str := r.URL.Query().Get("tx_max")
 	tx_max, err := strconv.Atoi(tx_max_str)
 	if err != nil {
@@ -30,15 +39,6 @@ func Updateboltcard(w http.ResponseWriter, r *http.Request) {
 	day_max, err := strconv.Atoi(day_max_str)
 	if err != nil {
 		msg := "updateboltcard: day_max is not a valid integer"
-		log.Warn(msg)
-		resp_err.Write_message(w, msg)
-		return
-	}
-
-	enable_flag_str := r.URL.Query().Get("enable")
-	enable_flag, err := strconv.ParseBool(enable_flag_str)
-	if err != nil {
-		msg := "updateboltcard: enable is not a valid boolean"
 		log.Warn(msg)
 		resp_err.Write_message(w, msg)
 		return
@@ -69,7 +69,7 @@ func Updateboltcard(w http.ResponseWriter, r *http.Request) {
 
 	// update the card record
 
-	err = db.Update_card(card_name, tx_max, day_max, enable_flag)
+	err = db.Update_card(card_name, enable_flag, tx_max, day_max)
 	if err != nil {
 		log.Warn(err.Error())
 		return

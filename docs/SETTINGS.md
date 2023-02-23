@@ -9,7 +9,7 @@ Here are the descriptions of values available to use in the `settings` table:
 | --- | --- | --- |
 | LOG_LEVEL | DEBUG | system logs are verbose to enable easier debug |
 | | PRODUCTION | system logs are minimal |
-| AES_DECRYPT_KEY | | hex encoded 128 bit AES key |
+| AES_DECRYPT_KEY | | hex encoded 128 bit AES key - see [FAQ](FAQ.md#how-do-i-generate-a-random-key-value-)|
 | HOST_DOMAIN | yourdomain.com | the domain for hosting lnurlw & lnurlp services |
 | MIN_WITHDRAW_SATS | 1 | minimum satoshis for lnurlw response |
 | MAX_WITHDRAW_SATS | 1000000 | maximum satoshis for lnurlw response |
@@ -27,3 +27,6 @@ Here are the descriptions of values available to use in the `settings` table:
 | AWS_SES_SECRET | | Amazon Web Services - Simple Email Service - access secret |
 | AWS_SES_EMAIL_FROM | | Amazon Web Services - Simple Email Service - email from field |
 | EMAIL_MAX_TXS | | maximum number of transactions to include in the email body |
+| FUNCTION_LNDHUB | DISABLE | system level switch for using LNDHUB in place of LND |
+| LNDHUB_URL | | URL for the LNDHUB service |
+| FUNCTION_INTERNAL_API | DISABLE | system level switch for activating the internal API |
