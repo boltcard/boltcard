@@ -50,7 +50,6 @@ func Getboltcard(w http.ResponseWriter, r *http.Request) {
 
 	jsonData := []byte(`{"status":"OK",` +
 		`"uid": "` + c.Db_uid + `",` +
-		`"last_counter_value": "` + strconv.FormatUint(uint64(c.Last_counter_value), 10) + `",` +
 		`"lnurlw_enable": "` + c.Lnurlw_enable + `",` +
 		`"tx_limit_sats": "` + strconv.Itoa(c.Tx_limit_sats) + `",` +
 		`"day_limit_sats": "` + strconv.Itoa(c.Day_limit_sats) + `"}`)

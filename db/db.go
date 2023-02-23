@@ -4,9 +4,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"os"
-
 	_ "github.com/lib/pq"
+	"os"
 )
 
 type Card struct {
