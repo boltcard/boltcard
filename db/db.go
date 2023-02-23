@@ -371,6 +371,37 @@ func Get_card_from_card_id(card_id int) (*Card, error) {
 	return &c, nil
 }
 
+func Get_card_from_card_name(card_name string) (*Card, error) {
+
+	c := Card{}
+
+	db, err := open()
+	if err != nil {
+		return &c, err
+	}
+	defer db.Close()
+
+	sqlStatement := `SELECT card_id, k2_cmac_key, uid,` +
+		` last_counter_value, lnurlw_request_timeout_sec,` +
+		` lnurlw_enable, tx_limit_sats, day_limit_sats` +
+		` FROM cards WHERE card_name=$1;`
+	row := db.QueryRow(sqlStatement, card_name)
+	err = row.Scan(
+		&c.Card_id,
+		&c.K2_cmac_key,
+		&c.Db_uid,
+		&c.Last_counter_value,
+		&c.Lnurlw_request_timeout_sec,
+		&c.Lnurlw_enable,
+		&c.Tx_limit_sats,
+		&c.Day_limit_sats)
+	if err != nil {
+		return &c, err
+	}
+
+	return &c, nil
+}
+
 func Check_lnurlw_timeout(card_payment_id int) (bool, error) {
 
 	db, err := open()

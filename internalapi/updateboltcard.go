@@ -63,7 +63,7 @@ func Updateboltcard(w http.ResponseWriter, r *http.Request) {
 	// log the request
 
 	log.WithFields(log.Fields{
-		"card_name": card_name, "tx_max": tx_max,
+		"card_name": card_name, "tx_max": tx_max, "day_max": day_max,
 		"enable": enable_flag}).Info("updateboltcard API request")
 
 	// update the card record

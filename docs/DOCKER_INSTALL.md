@@ -58,3 +58,4 @@ Run `$ docker ps` to list containers and get container names/ids
 -  `docker exec boltcard_main curl 'localhost:9001/createboltcard?card_name=card_5&enable=false&tx_max=1000&day_max=10000&uid_privacy=true&allow_neg_bal=true'`
 -  `docker exec boltcard_main curl 'localhost:9001/updateboltcard?card_name=card_5&enable=true&tx_max=100&day_max=1000'`
 -  `docker exec boltcard_main curl 'localhost:9001/wipeboltcard?card_name=card_5'`
+-  `docker exec boltcard_main curl 'localhost:9001/getboltcard?card_name=card_5'`
