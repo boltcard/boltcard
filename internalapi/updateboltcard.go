@@ -6,7 +6,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
-
 )
 
 func Updateboltcard(w http.ResponseWriter, r *http.Request) {
