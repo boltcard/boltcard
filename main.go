@@ -1,14 +1,15 @@
 package main
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/boltcard/boltcard/db"
 	"github.com/boltcard/boltcard/internalapi"
 	"github.com/boltcard/boltcard/lnurlp"
 	"github.com/boltcard/boltcard/lnurlw"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
-	"net/http"
-	"time"
 )
 
 var router = mux.NewRouter()
@@ -55,6 +56,7 @@ func main() {
 	internal_router.Path("/createboltcard").Methods("GET").HandlerFunc(internalapi.Createboltcard)
 	internal_router.Path("/updateboltcard").Methods("GET").HandlerFunc(internalapi.Updateboltcard)
 	internal_router.Path("/wipeboltcard").Methods("GET").HandlerFunc(internalapi.Wipeboltcard)
+	internal_router.Path("/getboltcard").Methods("GET").HandlerFunc(internalapi.Getboltcard)
 
 	port := db.Get_setting("HOST_PORT")
 	if port == "" {
