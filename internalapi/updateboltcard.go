@@ -1,11 +1,12 @@
 package internalapi
 
 import (
+	"net/http"
+	"strconv"
+
 	"github.com/boltcard/boltcard/db"
 	"github.com/boltcard/boltcard/resp_err"
 	log "github.com/sirupsen/logrus"
-	"net/http"
-	"strconv"
 )
 
 func Updateboltcard(w http.ResponseWriter, r *http.Request) {
@@ -20,6 +21,15 @@ func Updateboltcard(w http.ResponseWriter, r *http.Request) {
 	tx_max, err := strconv.Atoi(tx_max_str)
 	if err != nil {
 		msg := "updateboltcard: tx_max is not a valid integer"
+		log.Warn(msg)
+		resp_err.Write_message(w, msg)
+		return
+	}
+
+	day_max_str := r.URL.Query().Get("day_max")
+	day_max, err := strconv.Atoi(day_max_str)
+	if err != nil {
+		msg := "updateboltcard: day_max is not a valid integer"
 		log.Warn(msg)
 		resp_err.Write_message(w, msg)
 		return
@@ -54,12 +64,12 @@ func Updateboltcard(w http.ResponseWriter, r *http.Request) {
 	// log the request
 
 	log.WithFields(log.Fields{
-		"card_name": card_name, "tx_max": tx_max,
+		"card_name": card_name, "tx_max": tx_max, "day_max": day_max,
 		"enable": enable_flag}).Info("updateboltcard API request")
 
 	// update the card record
 
-	err = db.Update_card(card_name, tx_max, enable_flag)
+	err = db.Update_card(card_name, tx_max, day_max, enable_flag)
 	if err != nil {
 		log.Warn(err.Error())
 		return
