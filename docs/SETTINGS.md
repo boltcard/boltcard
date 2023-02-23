@@ -9,7 +9,7 @@ Here are the descriptions of values available to use in the `settings` table:
 | --- | --- | --- |
 | LOG_LEVEL | DEBUG | system logs are verbose to enable easier debug |
 | | PRODUCTION | system logs are minimal |
-| AES_DECRYPT_KEY | | hex encoded 128 bit AES key |
+| AES_DECRYPT_KEY | | hex encoded 128 bit AES key - see [FAQ](FAQ.md#how-do-i-generate-a-random-key-value-)|
 | HOST_DOMAIN | yourdomain.com | the domain for hosting lnurlw & lnurlp services |
 | MIN_WITHDRAW_SATS | 1 | minimum satoshis for lnurlw response |
 | MAX_WITHDRAW_SATS | 1000000 | maximum satoshis for lnurlw response |
