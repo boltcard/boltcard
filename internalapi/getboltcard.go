@@ -42,7 +42,9 @@ func Getboltcard(w http.ResponseWriter, r *http.Request) {
 
 	c, err := db.Get_card_from_card_name(card_name)
 	if err != nil {
-		log.Warn(err.Error())
+		msg := "getboltcard: the card name does not exist in the database"
+		log.Warn(msg)
+		resp_err.Write_message(w, msg)
 		return
 	}
 
