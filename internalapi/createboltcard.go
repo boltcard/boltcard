@@ -58,6 +58,12 @@ func Createboltcard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	card_name := r.URL.Query().Get("card_name")
+	if card_name == "" {
+		msg := "createboltcard: the card name must be set"
+		log.Warn(msg)
+		resp_err.Write_message(w, msg)
+		return
+	}
 
 	uid_privacy_flag_str := r.URL.Query().Get("uid_privacy")
 	uid_privacy_flag, err := strconv.ParseBool(uid_privacy_flag_str)
@@ -72,21 +78,6 @@ func Createboltcard(w http.ResponseWriter, r *http.Request) {
 	allow_neg_bal_flag, err := strconv.ParseBool(allow_neg_bal_flag_str)
 	if err != nil {
 		msg := "createboltcard: allow_neg_bal is not a valid boolean"
-		log.Warn(msg)
-		resp_err.Write_message(w, msg)
-		return
-	}
-
-	// check if card_name already exists
-
-	card_count, err := db.Get_card_name_count(card_name)
-	if err != nil {
-		log.Warn(err.Error())
-		return
-	}
-
-	if card_count > 0 {
-		msg := "createboltcard: the card name already exists in the database"
 		log.Warn(msg)
 		resp_err.Write_message(w, msg)
 		return
