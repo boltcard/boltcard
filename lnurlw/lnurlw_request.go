@@ -85,13 +85,18 @@ func setup_card_record(uid string, ctr uint32, uid_bin []byte, ctr_bin []byte, c
 
 	//  check card records for a matching cmac
 
-	for i, card := range cards {
+	for _, card := range cards {
+
 		// check the cmac
 
 		k2_cmac_key, err := hex.DecodeString(card.K2_cmac_key)
 
 		if err != nil {
-			return errors.New("card.k2_cmac_key decode failed")
+			log.WithFields(log.Fields{
+				"card.card_id":     card.Card_id,
+				"card.k2_cmac_key": card.K2_cmac_key,
+			}).Warn("card.k2_cmac_key decode failed - remove the invalid record")
+			return err
 		}
 
 		cmac_valid, err := check_cmac(uid_bin, ctr_bin, k2_cmac_key, cmac)
@@ -102,7 +107,6 @@ func setup_card_record(uid string, ctr uint32, uid_bin []byte, ctr_bin []byte, c
 
 		if cmac_valid == true {
 			log.WithFields(log.Fields{
-				"i":                i,
 				"card.card_id":     card.Card_id,
 				"card.k2_cmac_key": card.K2_cmac_key,
 			}).Info("cmac match found")
@@ -189,6 +193,7 @@ func parse_request(req *http.Request) (int, error) {
 	}
 
 	if card_count == 0 {
+		log.Info("check CMACs and set UID")
 		setup_card_record(uid_str, ctr_int, uid, ctr, ba_c)
 	}
 

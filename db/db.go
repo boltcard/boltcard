@@ -248,7 +248,7 @@ func Get_cards_blank_uid() ([]Card, error) {
 
 	// query the database
 
-	sqlStatement := `select card_id, k2_cmac_key from cards where uid='' and last_counter_value=0;`
+	sqlStatement := `select card_id, k2_cmac_key from cards where uid='' and last_counter_value=0 and wiped='N';`
 
 	rows, err := db.Query(sqlStatement)
 

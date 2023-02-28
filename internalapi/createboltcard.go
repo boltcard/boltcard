@@ -83,21 +83,6 @@ func Createboltcard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// check if card_name already exists
-
-	card_count, err := db.Get_card_name_count(card_name)
-	if err != nil {
-		log.Warn(err.Error())
-		return
-	}
-
-	if card_count > 0 {
-		msg := "createboltcard: the card name already exists in the database"
-		log.Warn(msg)
-		resp_err.Write_message(w, msg)
-		return
-	}
-
 	// log the request
 
 	log.WithFields(log.Fields{
