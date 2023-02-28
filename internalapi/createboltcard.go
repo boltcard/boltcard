@@ -58,6 +58,12 @@ func Createboltcard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	card_name := r.URL.Query().Get("card_name")
+	if card_name == "" {
+		msg := "createboltcard: the card name must be set"
+		log.Warn(msg)
+		resp_err.Write_message(w, msg)
+		return
+	}
 
 	uid_privacy_flag_str := r.URL.Query().Get("uid_privacy")
 	uid_privacy_flag, err := strconv.ParseBool(uid_privacy_flag_str)

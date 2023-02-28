@@ -32,7 +32,7 @@ func Wipeboltcard(w http.ResponseWriter, r *http.Request) {
 	card_count, err := db.Get_card_name_count(card_name)
 
 	if card_count == 0 {
-		msg := "the card name does not exist in the database"
+		msg := "wipeboltcard: the card name does not exist in the database"
 		log.Warn(msg)
 		resp_err.Write_message(w, msg)
 		return

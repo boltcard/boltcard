@@ -172,6 +172,7 @@ func Get_card_count_for_name_lnurlp(name string) (int, error) {
 	return card_count, nil
 }
 
+// gets the last record
 func Get_card_id_for_name(name string) (int, error) {
 
 	card_id := 0
@@ -182,7 +183,7 @@ func Get_card_id_for_name(name string) (int, error) {
 	}
 	defer db.Close()
 
-	sqlStatement := `select card_id from cards where card_name=$1;`
+	sqlStatement := `select card_id from cards where card_name=$1 order by card_id desc limit 1;`
 
 	row := db.QueryRow(sqlStatement, name)
 	err = row.Scan(&card_id)
@@ -371,6 +372,7 @@ func Get_card_from_card_id(card_id int) (*Card, error) {
 	return &c, nil
 }
 
+// non wiped cards only
 func Get_card_from_card_name(card_name string) (*Card, error) {
 
 	c := Card{}
@@ -384,7 +386,7 @@ func Get_card_from_card_name(card_name string) (*Card, error) {
 	sqlStatement := `SELECT card_id, k2_cmac_key, uid,` +
 		` last_counter_value, lnurlw_request_timeout_sec,` +
 		` lnurlw_enable, tx_limit_sats, day_limit_sats` +
-		` FROM cards WHERE card_name=$1;`
+		` FROM cards WHERE card_name=$1 AND wiped = 'N';`
 	row := db.QueryRow(sqlStatement, card_name)
 	err = row.Scan(
 		&c.Card_id,
@@ -794,14 +796,24 @@ func Insert_card(one_time_code string, k0_auth_key string, k2_cmac_key string, k
 	}
 	defer db.Close()
 
+	// ensure any cards with the same card_name are wiped
+
+	sqlStatement := `UPDATE cards SET` +
+		` lnurlw_enable = 'N', lnurlp_enable = 'N', email_enable = 'N', wiped = 'Y'` +
+		` WHERE card_name = $1;`
+	res, err := db.Exec(sqlStatement, card_name)
+	if err != nil {
+		return err
+	}
+
 	// insert a new record into cards
 
-	sqlStatement := `INSERT INTO cards` +
+	sqlStatement = `INSERT INTO cards` +
 		` (one_time_code, k0_auth_key, k2_cmac_key, k3, k4, uid, last_counter_value,` +
 		` lnurlw_request_timeout_sec, tx_limit_sats, day_limit_sats, lnurlw_enable,` +
 		` one_time_code_used, card_name, uid_privacy, allow_negative_balance)` +
 		` VALUES ($1, $2, $3, $4, $5, '', 0, 60, $6, $7, $8, 'N', $9, $10, $11);`
-	res, err := db.Exec(sqlStatement, one_time_code, k0_auth_key, k2_cmac_key, k3, k4,
+	res, err = db.Exec(sqlStatement, one_time_code, k0_auth_key, k2_cmac_key, k3, k4,
 		tx_limit_sats, day_limit_sats, lnurlw_enable_yn, card_name, uid_privacy_yn,
 		allow_neg_bal_yn)
 	if err != nil {
@@ -833,22 +845,15 @@ func Wipe_card(card_name string) (*Card_wipe_info, error) {
 	sqlStatement := `UPDATE cards SET` +
 		` lnurlw_enable = 'N', lnurlp_enable = 'N', email_enable = 'N', wiped = 'Y'` +
 		` WHERE card_name = $1;`
-	res, err := db.Exec(sqlStatement, card_name)
+	_, err = db.Exec(sqlStatement, card_name)
 	if err != nil {
 		return &card_wipe_info, err
-	}
-	count, err := res.RowsAffected()
-	if err != nil {
-		return &card_wipe_info, err
-	}
-	if count != 1 {
-		return &card_wipe_info, errors.New("not one card record updated")
 	}
 
-	// get card keys
+	// get card keys for the last card wiped
 
 	sqlStatement = `SELECT card_id, uid, k0_auth_key, k2_cmac_key, k3, k4` +
-		` FROM cards WHERE card_name = $1;`
+		` FROM cards WHERE card_name = $1 ORDER BY card_id DESC LIMIT 1;`
 	row := db.QueryRow(sqlStatement, card_name)
 	err = row.Scan(
 		&card_wipe_info.Id,
@@ -882,7 +887,7 @@ func Update_card(card_name string, lnurlw_enable bool, tx_limit_sats int, day_li
 	defer db.Close()
 
 	sqlStatement := `UPDATE cards SET lnurlw_enable = $2, tx_limit_sats = $3, day_limit_sats = $4 ` +
-		`WHERE card_name = $1;`
+		`WHERE card_name = $1 AND wiped = 'N';`
 
 	res, err := db.Exec(sqlStatement, card_name, lnurlw_enable_yn, tx_limit_sats, day_limit_sats)
 
