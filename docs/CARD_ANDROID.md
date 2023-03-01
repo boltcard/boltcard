@@ -56,7 +56,7 @@ on the app
 ### Update the card settings
 
 - use the internal API to update settings for a card
-- `$ curl 'localhost:9001/updateboltcard?card_name=card_5&enable=true&tx_max=100'`
+- `$ curl 'localhost:9001/updateboltcard?card_name=card_5&enable=true&tx_max=100&day_max=1000'`
 
 ### Wipe a card
 
