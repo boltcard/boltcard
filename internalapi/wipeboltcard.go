@@ -27,17 +27,6 @@ func Wipeboltcard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// check if card_name exists
-
-	card_count, err := db.Get_card_name_count(card_name)
-
-	if card_count == 0 {
-		msg := "wipeboltcard: the card name does not exist in the database"
-		log.Warn(msg)
-		resp_err.Write_message(w, msg)
-		return
-	}
-
 	// set the card as wiped and disabled, get the keys
 
 	card_wipe_info_values, err := db.Wipe_card(card_name)
