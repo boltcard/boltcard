@@ -2,6 +2,9 @@
 
 DELETE FROM settings;
 
+-- an explanation for each of the bolt card server settings can be found here
+-- https://github.com/boltcard/boltcard/blob/main/docs/SETTINGS.md
+
 INSERT INTO settings (name, value) VALUES ('LOG_LEVEL', '');
 INSERT INTO settings (name, value) VALUES ('AES_DECRYPT_KEY', '');
 INSERT INTO settings (name, value) VALUES ('HOST_DOMAIN', '');
