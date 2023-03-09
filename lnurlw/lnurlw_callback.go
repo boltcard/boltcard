@@ -27,6 +27,7 @@ type LndhubAuthResponse struct {
 type LndhubPayInvoiceRequest struct {
 	Invoice    string `json:"invoice"`
 	FreeAmount string `json:"freeamount"`
+	LoginId    string `json:"loginid"`
 }
 
 func lndhub_payment(w http.ResponseWriter, p *db.Payment, bolt11 decodepay.Bolt11, param_pr string) {
@@ -106,6 +107,7 @@ func lndhub_payment(w http.ResponseWriter, p *db.Payment, bolt11 decodepay.Bolt1
 	var payInvoiceRequest LndhubPayInvoiceRequest
 	payInvoiceRequest.Invoice = param_pr
 	payInvoiceRequest.FreeAmount = strconv.Itoa(int(bolt11.MSatoshi / 1000))
+	payInvoiceRequest.LoginId = card_name_parts[0]
 
 	req_payinvoice, err := json.Marshal(payInvoiceRequest)
 	log.Info(string(req_payinvoice))
