@@ -3,15 +3,16 @@ package lnurlw
 import (
 	"bytes"
 	"encoding/json"
+	"io"
+	"net/http"
+	"strconv"
+	"strings"
+
 	"github.com/boltcard/boltcard/db"
 	"github.com/boltcard/boltcard/lnd"
 	"github.com/boltcard/boltcard/resp_err"
 	decodepay "github.com/fiatjaf/ln-decodepay"
 	log "github.com/sirupsen/logrus"
-	"io"
-	"net/http"
-	"strconv"
-	"strings"
 )
 
 type LndhubAuthRequest struct {
@@ -146,14 +147,12 @@ func lndhub_payment(w http.ResponseWriter, p *db.Payment, bolt11 decodepay.Bolt1
 
 	log.Info(string(b2))
 
-	//	var auth_keys LndhubAuthResponse
+	log.Debug("sending 'status OK' response")
 
-	//	err = json.Unmarshal([]byte(b), &auth_keys)
-	//	if err != nil {
-	//		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
-	//		resp_err.Write(w)
-	//		return
-	//	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	jsonData := []byte(`{"status":"OK"}`)
+	w.Write(jsonData)
 
 }
 
