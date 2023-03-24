@@ -104,7 +104,7 @@ func lndhub_payment(w http.ResponseWriter, p *db.Payment, bolt11 decodepay.Bolt1
 	// {"status": "ERROR", "reason": "error details..."}
 	//  JSON response and then attempts to pay the invoices asynchronously.
 
-	go lndhub.PayInvoice(p.Card_payment_id, param_pr, int(bolt11.MSatoshi / 1000), card_name_parts[0], auth_keys.AccessToken)
+	go lndhub.PayInvoice(p.Card_payment_id, param_pr, int(bolt11.MSatoshi/1000), card_name_parts[0], auth_keys.AccessToken)
 
 	log.Debug("sending 'status OK' response")
 
