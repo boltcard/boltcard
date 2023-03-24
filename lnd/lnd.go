@@ -192,7 +192,7 @@ func Monitor_invoice_state(r_hash []byte) {
 
 // https://api.lightning.community/?shell#sendpaymentv2
 
-func Pay_invoice(card_payment_id int, invoice string) {
+func PayInvoice(card_payment_id int, invoice string) {
 
 	// SendPaymentV2
 
