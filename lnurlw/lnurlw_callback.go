@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/boltcard/boltcard/db"
 	"github.com/boltcard/boltcard/lnd"
+	"github.com/boltcard/boltcard/lndhub"
 	"github.com/boltcard/boltcard/resp_err"
 	decodepay "github.com/fiatjaf/ln-decodepay"
 	log "github.com/sirupsen/logrus"
@@ -23,12 +23,6 @@ type LndhubAuthRequest struct {
 type LndhubAuthResponse struct {
 	RefreshToken string `json:"refresh_token"`
 	AccessToken  string `json:"access_token"`
-}
-
-type LndhubPayInvoiceRequest struct {
-	Invoice    string `json:"invoice"`
-	FreeAmount string `json:"freeamount"`
-	LoginId    string `json:"loginid"`
 }
 
 func lndhub_payment(w http.ResponseWriter, p *db.Payment, bolt11 decodepay.Bolt11, param_pr string) {
@@ -104,48 +98,13 @@ func lndhub_payment(w http.ResponseWriter, p *db.Payment, bolt11 decodepay.Bolt1
 		return
 	}
 
-	//lndhub.payinvoice API call
-	var payInvoiceRequest LndhubPayInvoiceRequest
-	payInvoiceRequest.Invoice = param_pr
-	payInvoiceRequest.FreeAmount = strconv.Itoa(int(bolt11.MSatoshi / 1000))
-	payInvoiceRequest.LoginId = card_name_parts[0]
+	// https://github.com/fiatjaf/lnurl-rfc/blob/luds/03.md
+	//
+	// LN SERVICE sends a {"status": "OK"} or
+	// {"status": "ERROR", "reason": "error details..."}
+	//  JSON response and then attempts to pay the invoices asynchronously.
 
-	req_payinvoice, err := json.Marshal(payInvoiceRequest)
-	log.Info(string(req_payinvoice))
-	if err != nil {
-		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
-		resp_err.Write(w)
-		return
-	}
-
-	req, err := http.NewRequest("POST", lndhub_url+"/payinvoice", bytes.NewBuffer(req_payinvoice))
-	if err != nil {
-		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
-		resp_err.Write(w)
-		return
-	}
-
-	req.Header.Add("Access-Control-Allow-Origin", "*")
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Authorization", "Bearer "+auth_keys.AccessToken)
-
-	res2, err := client.Do(req)
-	if err != nil {
-		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
-		resp_err.Write(w)
-		return
-	}
-
-	defer res2.Body.Close()
-
-	b2, err := io.ReadAll(res2.Body)
-	if err != nil {
-		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
-		resp_err.Write(w)
-		return
-	}
-
-	log.Info(string(b2))
+	go lndhub.PayInvoice(p.Card_payment_id, param_pr, int(bolt11.MSatoshi / 1000), card_name_parts[0], auth_keys.AccessToken)
 
 	log.Debug("sending 'status OK' response")
 
@@ -153,7 +112,6 @@ func lndhub_payment(w http.ResponseWriter, p *db.Payment, bolt11 decodepay.Bolt1
 	w.WriteHeader(http.StatusOK)
 	jsonData := []byte(`{"status":"OK"}`)
 	w.Write(jsonData)
-
 }
 
 func lnd_payment(w http.ResponseWriter, p *db.Payment, bolt11 decodepay.Bolt11, param_pr string) {
@@ -225,7 +183,7 @@ func lnd_payment(w http.ResponseWriter, p *db.Payment, bolt11 decodepay.Bolt11, 
 	// {"status": "ERROR", "reason": "error details..."}
 	//  JSON response and then attempts to pay the invoices asynchronously.
 
-	go lnd.Pay_invoice(p.Card_payment_id, param_pr)
+	go lnd.PayInvoice(p.Card_payment_id, param_pr)
 
 	log.Debug("sending 'status OK' response")
 
