@@ -38,6 +38,25 @@ func lndhub_payment(w http.ResponseWriter, p *db.Payment, bolt11 decodepay.Bolt1
 		return
 	}
 
+	//check the tx limit 
+	if invoice_sats > c.Tx_limit_sats {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("invoice_sats: ", invoice_sats)
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("tx_limit_sats: ", c.Tx_limit_sats)
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("over tx_limit_sats!")
+		resp_err.Write(w)
+		return
+	}
+
+	//check the daily limit 
+	if day_total_sats+invoice_sats > c.Day_limit_sats {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("invoice_sats: ", invoice_sats)
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("day_total_sats: ", day_total_sats)
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("day_limit_sats: ", c.Day_limit_sats)
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("over day_limit_sats!")
+		resp_err.Write(w)
+		return
+	}
+
 	//lndhub.auth API call
 	//the login JSON is held in the Card_name field
 	// as "login:password"
