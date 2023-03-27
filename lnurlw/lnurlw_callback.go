@@ -38,6 +38,16 @@ func lndhub_payment(w http.ResponseWriter, p *db.Payment, bolt11 decodepay.Bolt1
 		return
 	}
 
+	// check amount limits
+	invoice_sats := int(bolt11.MSatoshi / 1000)
+
+	day_total_sats, err := db.Get_card_totals(p.Card_id)
+	if err != nil {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
+		resp_err.Write(w)
+		return
+	}
+
 	//check the tx limit 
 	if invoice_sats > c.Tx_limit_sats {
 		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("invoice_sats: ", invoice_sats)
