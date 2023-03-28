@@ -16,6 +16,7 @@ The simplest way to understand and set up your own system is to read the main do
 | --- | --- |
 | [System](docs/SYSTEM.md) | Bolt card system overview |
 | [Specification](docs/SPEC.md) | Bolt card specifications |
+| [Privacy](docs/CARD_PRIVACY.md) | Bolt card privacy |
 | [Docker Service Install](docs/DOCKER_INSTALL.md) | Bolt card service docker installation |
 | [Automatic Card Creation](docs/CARD_ANDROID.md) | Bolt card creation using the Bolt Card app|
 
