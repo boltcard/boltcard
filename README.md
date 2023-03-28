@@ -26,6 +26,8 @@ The simplest way to understand and set up your own system is to read the main do
 | [Manual Card Creation](docs/CARD_MANUAL.md) | Bolt card creation using NXP TagXplorer software |
 | [LndHub Payments](docs/LNDHUB.md) | How to use LndHub |
 | [FAQ](docs/FAQ.md) | Frequently asked questions |
+| [Datasheet](docs/NT4H2421Gx.pdf) | NXP NTAG424DNA datasheet |
+| [Application Note](docs/NT4H2421Gx.pdf) | NXP NTAG424DNA features and hints |
 
 ## Telegram group
 
