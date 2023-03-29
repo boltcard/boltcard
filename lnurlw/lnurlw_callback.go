@@ -38,6 +38,18 @@ func lndhub_payment(w http.ResponseWriter, p *db.Payment, bolt11 decodepay.Bolt1
 		return
 	}
 
+	// check amount limits
+	invoice_sats := int(bolt11.MSatoshi / 1000)
+
+	//check the tx limit
+	if invoice_sats > c.Tx_limit_sats {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("invoice_sats: ", invoice_sats)
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("tx_limit_sats: ", c.Tx_limit_sats)
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Info("over tx_limit_sats!")
+		resp_err.Write(w)
+		return
+	}
+
 	//lndhub.auth API call
 	//the login JSON is held in the Card_name field
 	// as "login:password"
@@ -92,6 +104,14 @@ func lndhub_payment(w http.ResponseWriter, p *db.Payment, bolt11 decodepay.Bolt1
 	var auth_keys LndhubAuthResponse
 
 	err = json.Unmarshal([]byte(resp_auth_bytes), &auth_keys)
+	if err != nil {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
+		resp_err.Write(w)
+		return
+	}
+
+	// update paid_flag so we only attempt payment once
+	err = db.Update_payment_paid(p.Card_payment_id)
 	if err != nil {
 		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
 		resp_err.Write(w)
