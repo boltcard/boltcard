@@ -36,6 +36,12 @@ Unfortunately, early implementations do not have this fully built out.
 
 You can check your card/s by reading the NDEF value (e.g. with the NXP TagInfo app) to check for a static identifier or a static UID value. This will enable you to find the level of privacy that has been implemented on creating the card.
 
+| Privacy level | Static id | UID plaintext|
+| ------------- | --------- | ------------ |
+| minimal       | yes       | yes          |
+| good          | no        | yes          |
+| best          | no        | no           |
+
 ### Minimal privacy (aka tracker)
 
 An identifier is included in the static part of the lnurlw.
