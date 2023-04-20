@@ -23,6 +23,7 @@ Here are the descriptions of values available to use in the `settings` table:
 | FUNCTION_LNURLW | ENABLE | system level switch for LNURLw (bolt card) services |
 | FUNCTION_LNURLP | DISABLE | system level switch for LNURLp (lightning address) services |
 | FUNCTION_EMAIL | DISABLE | system level switch for email updates on credits & debits |
+| DEFAULT_DESCRIPTION | '' | default description of payment |
 | AWS_SES_ID | | Amazon Web Services - Simple Email Service - access id |
 | AWS_SES_SECRET | | Amazon Web Services - Simple Email Service - access secret |
 | AWS_SES_EMAIL_FROM | | Amazon Web Services - Simple Email Service - email from field |
