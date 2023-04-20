@@ -92,9 +92,13 @@ func Send_email(recipient string, subject string, htmlBody string, textBody stri
 	aws_ses_id := db.Get_setting("AWS_SES_ID")
 	aws_ses_secret := db.Get_setting("AWS_SES_SECRET")
 	sender := db.Get_setting("AWS_SES_EMAIL_FROM")
+	region := db.Get_setting("AWS_REGION")
+	if region == "" {
+		region = "us-east-1"
+	}
 
 	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String("us-east-1"),
+		Region:      aws.String(region),
 		Credentials: credentials.NewStaticCredentials(aws_ses_id, aws_ses_secret, ""),
 	})
 
