@@ -26,6 +26,7 @@ Here are the descriptions of values available to use in the `settings` table:
 | AWS_SES_ID | | Amazon Web Services - Simple Email Service - access id |
 | AWS_SES_SECRET | | Amazon Web Services - Simple Email Service - access secret |
 | AWS_SES_EMAIL_FROM | | Amazon Web Services - Simple Email Service - email from field |
+| AWS_REGION | | Amazon Web Services - Account region |
 | EMAIL_MAX_TXS | | maximum number of transactions to include in the email body |
 | FUNCTION_LNDHUB | DISABLE | system level switch for using LNDHUB in place of LND |
 | LNDHUB_URL | | URL for the LNDHUB service |

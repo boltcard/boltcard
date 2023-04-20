@@ -23,6 +23,7 @@ INSERT INTO settings (name, value) VALUES ('FUNCTION_EMAIL', '');
 INSERT INTO settings (name, value) VALUES ('AWS_SES_ID', '');
 INSERT INTO settings (name, value) VALUES ('AWS_SES_SECRET', '');
 INSERT INTO settings (name, value) VALUES ('AWS_SES_EMAIL_FROM', '');
+INSERT INTO settings (name, value) VALUES ('AWS_REGION', '');
 INSERT INTO settings (name, value) VALUES ('EMAIL_MAX_TXS', '');
 INSERT INTO settings (name, value) VALUES ('FUNCTION_LNDHUB', '');
 INSERT INTO settings (name, value) VALUES ('LNDHUB_URL', '');
