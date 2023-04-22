@@ -106,6 +106,7 @@ add email notifications for payments and fund receipt
 `AWS_SES_ID=..."` (settings table)  
 `AWS_SES_SECRET=..."` (settings table)  
 `AWS_SES_EMAIL_FROM=..."` (settings table)  
+`AWS_REGION=...` (settings table)
 `FUNCTION_EMAIL=ENABLE"` (settings table)  
 `cards.email_address='card.notifications@yourdomain.com'`  
 `cards.email_enable='Y'`  
