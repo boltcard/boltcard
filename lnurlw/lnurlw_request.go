@@ -312,11 +312,13 @@ func Response(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	defalut_description := db.Get_setting("DEFAULT_DESCRIPTION")
+
 	response := ResponseData{}
 	response.Tag = "withdrawRequest"
 	response.Callback = lnurlw_cb_url
 	response.LnurlwK1 = lnurlw_k1
-	response.DefaultDescription = "WWT withdrawal"
+	response.DefaultDescription = defalut_description
 	response.MinWithdrawable = min_withdraw_sats * 1000 // milliSats
 	response.MaxWithdrawable = max_withdraw_sats * 1000 // milliSats
 
