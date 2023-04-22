@@ -20,7 +20,7 @@ INSERT INTO settings (name, value) VALUES ('LN_TESTNODE', '');
 INSERT INTO settings (name, value) VALUES ('FUNCTION_LNURLW', '');
 INSERT INTO settings (name, value) VALUES ('FUNCTION_LNURLP', '');
 INSERT INTO settings (name, value) VALUES ('FUNCTION_EMAIL', '');
-INSERT INTO settings (name, value) VALUES ('DEFAULT_DESCRIPTION', '');
+INSERT INTO settings (name, value) VALUES ('DEFAULT_DESCRIPTION', 'bolt card service');
 INSERT INTO settings (name, value) VALUES ('AWS_SES_ID', '');
 INSERT INTO settings (name, value) VALUES ('AWS_SES_SECRET', '');
 INSERT INTO settings (name, value) VALUES ('AWS_SES_EMAIL_FROM', '');

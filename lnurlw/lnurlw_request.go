@@ -313,9 +313,6 @@ func Response(w http.ResponseWriter, req *http.Request) {
 	}
 
 	defalut_description := db.Get_setting("DEFAULT_DESCRIPTION")
-	if defalut_description == "" {
-		defalut_description = "WWT withdrawal"
-	}
 
 	response := ResponseData{}
 	response.Tag = "withdrawRequest"
