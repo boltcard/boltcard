@@ -1,15 +1,18 @@
 package email
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
 	"github.com/boltcard/boltcard/db"
+	"github.com/sendgrid/sendgrid-go"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
 	log "github.com/sirupsen/logrus"
-	"strconv"
-	"strings"
 )
 
 func Send_balance_email(recipient_email string, card_id int) {
@@ -86,70 +89,91 @@ func Send_balance_email(recipient_email string, card_id int) {
 }
 
 // https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/ses-example-send-email.html
+// https://github.com/sendgrid/sendgrid-go
 
 func Send_email(recipient string, subject string, htmlBody string, textBody string) {
 
-	aws_ses_id := db.Get_setting("AWS_SES_ID")
-	aws_ses_secret := db.Get_setting("AWS_SES_SECRET")
-	sender := db.Get_setting("AWS_SES_EMAIL_FROM")
-	region := db.Get_setting("AWS_REGION")
-
-	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(region),
-		Credentials: credentials.NewStaticCredentials(aws_ses_id, aws_ses_secret, ""),
-	})
-
-	svc := ses.New(sess)
-
-	charSet := "UTF-8"
-
-	input := &ses.SendEmailInput{
-		Destination: &ses.Destination{
-			CcAddresses: []*string{},
-			ToAddresses: []*string{
-				aws.String(recipient),
-			},
-		},
-		Message: &ses.Message{
-			Body: &ses.Body{
-				Html: &ses.Content{
-					Charset: aws.String(charSet),
-					Data:    aws.String(htmlBody),
-				},
-				Text: &ses.Content{
-					Charset: aws.String(charSet),
-					Data:    aws.String(textBody),
-				},
-			},
-			Subject: &ses.Content{
-				Charset: aws.String(charSet),
-				Data:    aws.String(subject),
-			},
-		},
-		Source: aws.String(sender),
-		//ConfigurationSetName: aws.String(ConfigurationSet),
-	}
-
-	result, err := svc.SendEmail(input)
-
-	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case ses.ErrCodeMessageRejected:
-				log.Warn(ses.ErrCodeMessageRejected, aerr.Error())
-			case ses.ErrCodeMailFromDomainNotVerifiedException:
-				log.Warn(ses.ErrCodeMailFromDomainNotVerifiedException, aerr.Error())
-			case ses.ErrCodeConfigurationSetDoesNotExistException:
-				log.Warn(ses.ErrCodeConfigurationSetDoesNotExistException, aerr.Error())
-			default:
-				log.Warn(aerr.Error())
-			}
-		} else {
+	send_grid_api_key := db.Get_setting("SENDGRID_API_KEY")
+	send_grid_email_sender := db.Get_setting("SENDGRID_EMAIL_SENDER")
+	if send_grid_api_key != "" && send_grid_email_sender != "" {
+		from := mail.NewEmail("", send_grid_email_sender)
+		subject := subject
+		to := mail.NewEmail("", recipient)
+		plainTextContent := textBody
+		htmlContent := htmlBody
+		message := mail.NewSingleEmail(from, subject, to, plainTextContent, htmlContent)
+		client := sendgrid.NewSendClient(send_grid_api_key)
+		response, err := client.Send(message)
+		if err != nil {
 			log.Warn(err.Error())
+		} else {
+			log.WithFields(log.Fields{"result": response}).Info("email sent")
 		}
 
-		return
-	}
+	} else {
 
-	log.WithFields(log.Fields{"result": result}).Info("email sent")
+		aws_ses_id := db.Get_setting("AWS_SES_ID")
+		aws_ses_secret := db.Get_setting("AWS_SES_SECRET")
+		sender := db.Get_setting("AWS_SES_EMAIL_FROM")
+		region := db.Get_setting("AWS_REGION")
+
+		sess, err := session.NewSession(&aws.Config{
+			Region:      aws.String(region),
+			Credentials: credentials.NewStaticCredentials(aws_ses_id, aws_ses_secret, ""),
+		})
+
+		svc := ses.New(sess)
+
+		charSet := "UTF-8"
+
+		input := &ses.SendEmailInput{
+			Destination: &ses.Destination{
+				CcAddresses: []*string{},
+				ToAddresses: []*string{
+					aws.String(recipient),
+				},
+			},
+			Message: &ses.Message{
+				Body: &ses.Body{
+					Html: &ses.Content{
+						Charset: aws.String(charSet),
+						Data:    aws.String(htmlBody),
+					},
+					Text: &ses.Content{
+						Charset: aws.String(charSet),
+						Data:    aws.String(textBody),
+					},
+				},
+				Subject: &ses.Content{
+					Charset: aws.String(charSet),
+					Data:    aws.String(subject),
+				},
+			},
+			Source: aws.String(sender),
+			//ConfigurationSetName: aws.String(ConfigurationSet),
+		}
+
+		result, err := svc.SendEmail(input)
+
+		if err != nil {
+			if aerr, ok := err.(awserr.Error); ok {
+				switch aerr.Code() {
+				case ses.ErrCodeMessageRejected:
+					log.Warn(ses.ErrCodeMessageRejected, aerr.Error())
+				case ses.ErrCodeMailFromDomainNotVerifiedException:
+					log.Warn(ses.ErrCodeMailFromDomainNotVerifiedException, aerr.Error())
+				case ses.ErrCodeConfigurationSetDoesNotExistException:
+					log.Warn(ses.ErrCodeConfigurationSetDoesNotExistException, aerr.Error())
+				default:
+					log.Warn(aerr.Error())
+				}
+			} else {
+				log.Warn(err.Error())
+			}
+
+			return
+		}
+
+		log.WithFields(log.Fields{"result": result}).Info("email sent")
+	}
 }
