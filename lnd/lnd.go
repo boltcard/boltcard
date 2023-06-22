@@ -5,11 +5,12 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"strconv"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	decodepay "github.com/fiatjaf/ln-decodepay"
 	lnrpc "github.com/lightningnetwork/lnd/lnrpc"
@@ -20,6 +21,8 @@ import (
 	"google.golang.org/grpc/credentials"
 
 	"gopkg.in/macaroon.v2"
+
+	nostrfy "github.com/boltcard/boltcard/nostr"
 
 	"github.com/boltcard/boltcard/db"
 	"github.com/boltcard/boltcard/email"
@@ -186,7 +189,7 @@ func Monitor_invoice_state(r_hash []byte) {
 	}
 
 	go email.Send_balance_email(c.Email_address, card_id)
-
+	go nostrfy.SendNostrfication(card_id, c.Card_name, db.NostrRec)
 	return
 }
 
@@ -294,6 +297,6 @@ func PayInvoice(card_payment_id int, invoice string) {
 	}
 
 	go email.Send_balance_email(c.Email_address, card_id)
-
+	go nostrfy.SendNostrfication(card_id, c.Card_name, db.NostrPay)
 	return
 }
