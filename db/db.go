@@ -29,6 +29,9 @@ type Card struct {
 	One_time_code              string
 	Card_name                  string
 	Allow_negative_balance     string
+	Pin_enable                 string
+	Pin_number                 string
+	Pin_limit_sats             int
 }
 
 type Payment struct {
@@ -350,7 +353,8 @@ func Get_card_from_card_id(card_id int) (*Card, error) {
 		`last_counter_value, lnurlw_request_timeout_sec, ` +
 		`lnurlw_enable, tx_limit_sats, day_limit_sats, ` +
 		`email_enable, email_address, card_name, ` +
-		`allow_negative_balance FROM cards WHERE card_id=$1;`
+		`allow_negative_balance, pin_enable, pin_number, ` +
+		`pin_limit_sats FROM cards WHERE card_id=$1;`
 	row := db.QueryRow(sqlStatement, card_id)
 	err = row.Scan(
 		&c.Card_id,
@@ -364,7 +368,10 @@ func Get_card_from_card_id(card_id int) (*Card, error) {
 		&c.Email_enable,
 		&c.Email_address,
 		&c.Card_name,
-		&c.Allow_negative_balance)
+		&c.Allow_negative_balance,
+		&c.Pin_enable,
+		&c.Pin_number,
+		&c.Pin_limit_sats)
 	if err != nil {
 		return &c, err
 	}

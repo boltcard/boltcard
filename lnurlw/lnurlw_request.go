@@ -304,6 +304,15 @@ func Response(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// get pin_enable & pin_limit_sats
+
+	c, err := db.Get_card_from_card_id(card_id)
+	if err != nil {
+		log.WithFields(log.Fields{"card_id": card_id}).Warn(err)
+		resp_err.Write(w)
+		return
+	}
+
 	default_description := db.Get_setting("DEFAULT_DESCRIPTION")
 
 	response := make(map[string]interface{})
@@ -314,6 +323,10 @@ func Response(w http.ResponseWriter, req *http.Request) {
 	response["defaultDescription"] = default_description
 	response["minWithdrawable"] = min_withdraw_sats * 1000 // milliSats
 	response["maxWithdrawable"] = max_withdraw_sats * 1000 // milliSats
+
+	if c.Pin_enable == "Y" {
+		response["pinLimit"] = c.Pin_limit_sats * 1000 // milliSats
+	}
 
 	jsonData, err := json.Marshal(response)
 

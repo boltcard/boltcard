@@ -18,7 +18,7 @@ INSERT INTO settings (name, value) VALUES ('MAX_WITHDRAW_SATS', '1000');
 
 INSERT INTO cards 
 	(k0_auth_key, k2_cmac_key, k3, k4, lnurlw_enable, last_counter_value, lnurlw_request_timeout_sec,
-	tx_limit_sats, day_limit_sats, card_name, pin_limit_sats) 
+	tx_limit_sats, day_limit_sats, card_name, pin_enable, pin_number, pin_limit_sats) 
 	VALUES 
 	('', 'd3dffa1e12d2477e443a6ee9fcfeab18', '', '', 'Y', 0, 10,
-	0, 0, 'test_card', 0);
+	0, 0, 'test_card', 'Y', '1234', 1000);
