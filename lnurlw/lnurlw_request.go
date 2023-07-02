@@ -14,15 +14,6 @@ import (
 	"strings"
 )
 
-type ResponseData struct {
-	Tag                string `json:"tag"`
-	Callback           string `json:"callback"`
-	LnurlwK1           string `json:"k1"`
-	DefaultDescription string `json:"defaultDescription"`
-	MinWithdrawable    int    `json:"minWithdrawable"`
-	MaxWithdrawable    int    `json:"maxWithdrawable"`
-}
-
 func get_p_c(req *http.Request, p_name string, c_name string) (p string, c string) {
 
 	params_p, ok := req.URL.Query()[p_name]
@@ -255,6 +246,7 @@ func parse_request(req *http.Request) (int, error) {
 func Response(w http.ResponseWriter, req *http.Request) {
 
 	env_host_domain := db.Get_setting("HOST_DOMAIN")
+
 	if req.Host != env_host_domain {
 		log.Warn("wrong host domain")
 		resp_err.Write(w)
@@ -312,15 +304,16 @@ func Response(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	defalut_description := db.Get_setting("DEFAULT_DESCRIPTION")
+	default_description := db.Get_setting("DEFAULT_DESCRIPTION")
 
-	response := ResponseData{}
-	response.Tag = "withdrawRequest"
-	response.Callback = lnurlw_cb_url
-	response.LnurlwK1 = lnurlw_k1
-	response.DefaultDescription = defalut_description
-	response.MinWithdrawable = min_withdraw_sats * 1000 // milliSats
-	response.MaxWithdrawable = max_withdraw_sats * 1000 // milliSats
+	response := make(map[string]interface{})
+
+	response["tag"] = "withdrawRequest"
+	response["callback"] = lnurlw_cb_url
+	response["k1"] = lnurlw_k1
+	response["defaultDescription"] = default_description
+	response["minWithdrawable"] = min_withdraw_sats * 1000 // milliSats
+	response["maxWithdrawable"] = max_withdraw_sats * 1000 // milliSats
 
 	jsonData, err := json.Marshal(response)
 
