@@ -28,7 +28,7 @@ When tested with LND in Nov 2022, the paying (customer, bolt card) lightning nod
 
 # I get a 6982 error when trying to program a blank card
 
-A 6982 error is is known to happen after trying to use a 'blank' card which has been wiped with the CoinCorner customer app (July 2023) and happens because the card settings have not been cleared down correctly.
+A 6982 error is is known to happen after trying to use a 'blank' card which has been wiped with the CoinCorner customer app (July 2023) and happens because the card settings have not been cleared down correctly. It can also happen where a card is removed partway through programming (which can take a few seconds) or where the mobile device does not complete programming due to being in a low battery situation.
 The card settings can be fixed by using the 'Bolt Card NFC Card Creator' app. The card will then be blank and usable again.
 - Reset Keys
 - Enter all '0's in Key 0 until the field is full and copy to Keys 1-4
