@@ -4,8 +4,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	_ "github.com/lib/pq"
 	"os"
+
+	_ "github.com/lib/pq"
 )
 
 type Card struct {
@@ -29,6 +30,7 @@ type Card struct {
 	One_time_code              string
 	Card_name                  string
 	Allow_negative_balance     string
+	Nostr_priv_key             string
 }
 
 type Payment struct {
@@ -55,6 +57,11 @@ type Card_wipe_info struct {
 	K4  string
 	Uid string
 }
+
+const (
+	NostrPay = iota
+	NostrRec = iota
+)
 
 func open() (*sql.DB, error) {
 
@@ -720,6 +727,62 @@ func Get_card_txs(card_id int, max_txs int) ([]Transaction, error) {
 	return transactions, nil
 }
 
+func Get_latest_card_tx(card_id int, pay_rec int) (Transaction, error) {
+	// open the database
+	var t Transaction
+	db, err := open()
+
+	if err != nil {
+		return t, err
+	}
+
+	defer db.Close()
+
+	// query the database
+	sqlStatement := `SELECT card_id, ` +
+		`card_payments.card_payment_id AS tx_id, 'payment' AS tx_type, ` +
+		`amount_msats as tx_amount_msats, ` +
+		`TO_CHAR(payment_status_time, 'DD/MM/YYYY HH24:MI:SS') AS tx_time ` +
+		`FROM card_payments WHERE card_id = $1 AND payment_status != 'FAILED' ` +
+		`AND payment_status != '' ` +
+		`AND amount_msats != 0  ORDER BY payment_status_time DESC LIMIT $2`
+	if pay_rec == NostrRec {
+		sqlStatement = `SELECT card_id, card_receipts.card_receipt_id AS tx_id, ` +
+			`'receipt' AS tx_type, amount_msats as tx_amount_msats, ` +
+			`TO_CHAR(receipt_status_time, 'DD/MM/YYYY HH24:MI:SS') AS tx_time ` +
+			`FROM card_receipts WHERE card_id = $1 ` +
+			`AND receipt_status = 'SETTLED' ORDER BY receipt_status_time DESC LIMIT $2`
+	}
+	rows, err := db.Query(sqlStatement, card_id, 1)
+
+	if err != nil {
+		return t, err
+	}
+
+	defer rows.Close()
+
+	// prepare the results
+
+	// var transactions []Transaction
+
+	// Loop through rows, using Scan to assign column data to struct fields.
+	for rows.Next() {
+		err := rows.Scan(&t.Card_id, &t.Tx_id, &t.Tx_type, &t.Tx_amount_msats, &t.Tx_time)
+
+		if err != nil {
+			return t, err
+		}
+		// transactions = append(transactions, t)
+	}
+
+	err = rows.Err()
+
+	if err != nil {
+		return t, err
+	}
+
+	return t, nil
+}
 func Get_card_total_sats(card_id int) (int, error) {
 
 	db, err := open()
