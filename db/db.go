@@ -392,7 +392,7 @@ func Get_card_from_card_name(card_name string) (*Card, error) {
 
 	sqlStatement := `SELECT card_id, k2_cmac_key, uid,` +
 		` last_counter_value, lnurlw_request_timeout_sec,` +
-		` lnurlw_enable, tx_limit_sats, day_limit_sats` +
+		` lnurlw_enable, tx_limit_sats, day_limit_sats, pin_enable, pin_limit_sats` +
 		` FROM cards WHERE card_name=$1 AND wiped = 'N';`
 	row := db.QueryRow(sqlStatement, card_name)
 	err = row.Scan(
@@ -403,7 +403,9 @@ func Get_card_from_card_name(card_name string) (*Card, error) {
 		&c.Lnurlw_request_timeout_sec,
 		&c.Lnurlw_enable,
 		&c.Tx_limit_sats,
-		&c.Day_limit_sats)
+		&c.Day_limit_sats,
+		&c.Pin_enable,
+		&c.Pin_limit_sats)
 	if err != nil {
 		return &c, err
 	}

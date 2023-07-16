@@ -37,7 +37,9 @@ func Getboltcard(w http.ResponseWriter, r *http.Request) {
 		`"uid": "` + c.Db_uid + `",` +
 		`"lnurlw_enable": "` + c.Lnurlw_enable + `",` +
 		`"tx_limit_sats": "` + strconv.Itoa(c.Tx_limit_sats) + `",` +
-		`"day_limit_sats": "` + strconv.Itoa(c.Day_limit_sats) + `"}`)
+		`"day_limit_sats": "` + strconv.Itoa(c.Day_limit_sats) + `", ` + 
+		`"pin_enable": "` + strconv.Itoa(c.Pin_enable) + `", ` + 
+		`"pin_limit_sats": "` + strconv.Itoa(c.Pin_limit_sats) + `"}`)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
