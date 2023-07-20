@@ -43,6 +43,26 @@ func Updateboltcard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	pin_enable_flag_str := r.URL.Query().Get("enable_pin")
+	pin_enable_flag, err := strconv.ParseBool(pin_enable_flag_str)
+	if err != nil {
+		msg := "updateboltcard: enable_pin is not a valid boolean"
+		log.Warn(msg)
+		resp_err.Write_message(w, msg)
+		return
+	}
+
+	pin_number := r.URL.Query().Get("pin_number")
+
+	pin_limit_sats_str := r.URL.Query().Get("pin_limit_sats")
+	pin_limit_sats, err := strconv.Atoi(pin_limit_sats_str)
+	if err != nil {
+		msg := "updateboltcard: pin_limit_sats is not a valid integer"
+		log.Warn(msg)
+		resp_err.Write_message(w, msg)
+		return
+	}
+
 	card_name := r.URL.Query().Get("card_name")
 
 	// check if card_name exists
@@ -64,11 +84,12 @@ func Updateboltcard(w http.ResponseWriter, r *http.Request) {
 
 	log.WithFields(log.Fields{
 		"card_name": card_name, "tx_max": tx_max, "day_max": day_max,
-		"enable": enable_flag}).Info("updateboltcard API request")
+		"enable": enable_flag, "enable_pin": pin_enable_flag,
+		"pin_number": pin_number, "pin_limit_sats": pin_limit_sats}).Info("updateboltcard API request")
 
 	// update the card record
 
-	err = db.Update_card(card_name, enable_flag, tx_max, day_max)
+	err = db.Update_card(card_name, enable_flag, tx_max, day_max, pin_enable_flag, pin_number, pin_limit_sats)
 	if err != nil {
 		log.Warn(err.Error())
 		return

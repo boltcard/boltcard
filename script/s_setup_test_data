@@ -1,0 +1,6 @@
+# to close any database connections
+sudo systemctl stop postgresql
+sudo systemctl start postgresql
+
+psql postgres -f sql/data.test.sql
+echo Test data added
