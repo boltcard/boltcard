@@ -56,13 +56,13 @@ func lndhub_payment(w http.ResponseWriter, p *db.Payment, bolt11 decodepay.Bolt1
 	card_name_parts := strings.Split(c.Card_name, ":")
 
 	if len(card_name_parts) != 2 {
-		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn("login:password not found")
 		resp_err.Write(w)
 		return
 	}
 
 	if len(card_name_parts[0]) != 20 || len(card_name_parts[1]) != 20 {
-		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn("login:password badly formed")
 		resp_err.Write(w)
 		return
 	}
@@ -72,7 +72,6 @@ func lndhub_payment(w http.ResponseWriter, p *db.Payment, bolt11 decodepay.Bolt1
 	lhAuthRequest.Password = card_name_parts[1]
 
 	authReq, err := json.Marshal(lhAuthRequest)
-	log.Info(string(authReq))
 
 	req_auth, err := http.NewRequest("POST", lndhub_url+"/auth", bytes.NewBuffer(authReq))
 	if err != nil {
@@ -100,6 +99,9 @@ func lndhub_payment(w http.ResponseWriter, p *db.Payment, bolt11 decodepay.Bolt1
 		resp_err.Write(w)
 		return
 	}
+
+	log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id,
+		"resp_auth_bytes": resp_auth_bytes}).Info("issue 62")
 
 	var auth_keys LndhubAuthResponse
 
