@@ -101,7 +101,7 @@ func lndhub_payment(w http.ResponseWriter, p *db.Payment, bolt11 decodepay.Bolt1
 	}
 
 	log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id,
-		"resp_auth_bytes": resp_auth_bytes}).Info("issue 62")
+		"resp_auth_bytes": string(resp_auth_bytes)}).Info("issue 62")
 
 	var auth_keys LndhubAuthResponse
 
