@@ -53,6 +53,7 @@ func main() {
 
 	internal_router.Path("/ping").Methods("GET").HandlerFunc(internalapi.Internal_ping)
 	internal_router.Path("/createboltcard").Methods("GET").HandlerFunc(internalapi.Createboltcard)
+	internal_router.Path("/createboltcardwithpin").Methods("GET").HandlerFunc(internalapi.Createboltcardwithpin)
 	internal_router.Path("/updateboltcard").Methods("GET").HandlerFunc(internalapi.Updateboltcard)
 	internal_router.Path("/updateboltcardwithpin").Methods("GET").HandlerFunc(internalapi.Updateboltcardwithpin)
 	internal_router.Path("/wipeboltcard").Methods("GET").HandlerFunc(internalapi.Wipeboltcard)
