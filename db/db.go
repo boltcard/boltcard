@@ -1026,3 +1026,47 @@ func Update_card_with_pin(card_name string, lnurlw_enable bool, tx_limit_sats in
 
 	return nil
 }
+
+func Update_card_with_part_pin(card_name string, lnurlw_enable bool, tx_limit_sats int, day_limit_sats int,
+	pin_enable bool, pin_limit_sats int) error {
+
+	lnurlw_enable_yn := "N"
+	if lnurlw_enable {
+		lnurlw_enable_yn = "Y"
+	}
+
+	pin_enable_yn := "N"
+	if pin_enable {
+		pin_enable_yn = "Y"
+	}
+
+	db, err := open()
+
+	if err != nil {
+		return err
+	}
+
+	defer db.Close()
+
+	sqlStatement := `UPDATE cards SET lnurlw_enable = $2, tx_limit_sats = $3, day_limit_sats = $4, ` +
+		`pin_enable = $5, pin_limit_sats = $7 WHERE card_name = $1 AND wiped = 'N';`
+
+	res, err := db.Exec(sqlStatement, card_name, lnurlw_enable_yn, tx_limit_sats, day_limit_sats,
+		pin_enable_yn, pin_limit_sats)
+
+	if err != nil {
+		return err
+	}
+
+	count, err := res.RowsAffected()
+
+	if err != nil {
+		return err
+	}
+
+	if count != 1 {
+		return errors.New("not one card record updated")
+	}
+
+	return nil
+}

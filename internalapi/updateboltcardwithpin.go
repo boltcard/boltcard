@@ -89,11 +89,22 @@ func Updateboltcardwithpin(w http.ResponseWriter, r *http.Request) {
 
 	// update the card record
 
-	err = db.Update_card_with_pin(card_name, enable_flag, tx_max, day_max,
-		pin_enable_flag, pin_number, pin_limit_sats)
-	if err != nil {
-		log.Warn(err.Error())
-		return
+	if pin_number == "" {
+		err = db.Update_card_with_part_pin(card_name, enable_flag, tx_max, day_max,
+			pin_enable_flag, pin_limit_sats)
+		if err != nil {
+			log.Warn(err.Error())
+			return
+		}
+	}
+
+	if pin_number != "" {
+		err = db.Update_card_with_pin(card_name, enable_flag, tx_max, day_max,
+			pin_enable_flag, pin_number, pin_limit_sats)
+		if err != nil {
+			log.Warn(err.Error())
+			return
+		}
 	}
 
 	// send a response
