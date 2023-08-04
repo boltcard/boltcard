@@ -1049,7 +1049,7 @@ func Update_card_with_part_pin(card_name string, lnurlw_enable bool, tx_limit_sa
 	defer db.Close()
 
 	sqlStatement := `UPDATE cards SET lnurlw_enable = $2, tx_limit_sats = $3, day_limit_sats = $4, ` +
-		`pin_enable = $5, pin_limit_sats = $7 WHERE card_name = $1 AND wiped = 'N';`
+		`pin_enable = $5, pin_limit_sats = $6 WHERE card_name = $1 AND wiped = 'N';`
 
 	res, err := db.Exec(sqlStatement, card_name, lnurlw_enable_yn, tx_limit_sats, day_limit_sats,
 		pin_enable_yn, pin_limit_sats)
