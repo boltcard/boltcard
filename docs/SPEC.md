@@ -3,11 +3,15 @@
 The bolt card system is built on the technologies listed below.
 
 - [LUD-03: withdrawRequest base spec.](https://github.com/fiatjaf/lnurl-rfc/blob/luds/03.md)
-  - with the exception of maxWithdrawable which should be returned as higher than the actual maximum amount
+  - with the exception of maxWithdrawable which must be returned as higher than the actual maximum amount
 - [LUD-17: Protocol schemes and raw (non bech32-encoded) URLs.](https://github.com/fiatjaf/lnurl-rfc/blob/luds/17.md)
 - NFC Data Exchange Format (NDEF)
 - Replay protection
   - NXP Secure Unique NFC Message (SUN) technology as implemented in the NXP NTAG 424 DNA card
+
+Bolt card systems should implement the best possible privacy.
+
+- [Privacy levels](https://github.com/boltcard/boltcard/blob/main/docs/CARD_PRIVACY.md)
 
 Bolt card systems may optionally support these technogies.
 
