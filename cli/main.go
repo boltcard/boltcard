@@ -25,9 +25,9 @@ func check_cmac(uid []byte, ctr []byte, k2_cmac_key []byte, cmac []byte) (bool, 
 	sv2[10] = uid[4]
 	sv2[11] = uid[5]
 	sv2[12] = uid[6]
-	sv2[13] = ctr[0]
+	sv2[13] = ctr[2]
 	sv2[14] = ctr[1]
-	sv2[15] = ctr[2]
+	sv2[15] = ctr[0]
 
 	cmac_verified, err := crypto.Aes_cmac(k2_cmac_key, sv2, cmac)
 
@@ -108,7 +108,11 @@ func main() {
 	}
 
 	uid := dec_p[1:8]
-	ctr := dec_p[8:11]
+	
+  ctr := make([]byte, 3)
+	ctr[0] = dec_p[10]
+	ctr[1] = dec_p[9]
+	ctr[2] = dec_p[8]
 
 	// set up uid & ctr for card record if needed
 

@@ -10,7 +10,7 @@ c =  E19CCB1FED8892CE
 aes_decrypt_key =  0c3b25d92b38ae443229dd59ad34b85d
 aes_cmac_key =  b45775776cb224c75bcde7ca3704e933
 
-decrypted card data : uid 04996c6a926980 , ctr 030000
+decrypted card data : uid 04996c6a926980 , ctr 000003
 cmac validates ok
 
 
@@ -22,7 +22,7 @@ c =  66B4826EA4C155B4
 aes_decrypt_key =  0c3b25d92b38ae443229dd59ad34b85d
 aes_cmac_key =  b45775776cb224c75bcde7ca3704e933
 
-decrypted card data : uid 04996c6a926980 , ctr 050000
+decrypted card data : uid 04996c6a926980 , ctr 000005
 cmac validates ok
 
 
@@ -34,7 +34,7 @@ c =  CC61660C020B4D96
 aes_decrypt_key =  0c3b25d92b38ae443229dd59ad34b85d
 aes_cmac_key =  b45775776cb224c75bcde7ca3704e933
 
-decrypted card data : uid 04996c6a926980 , ctr 070000
+decrypted card data : uid 04996c6a926980 , ctr 000007
 cmac validates ok
 
 ```
