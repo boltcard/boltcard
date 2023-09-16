@@ -1,5 +1,10 @@
+# test vectors
 
+some test vectors to help with developing code to AES decode and validate lnurlw:// requests
 
+these have been created by using an actual card and with [a small command line utility](https://github.com/boltcard/boltcard/blob/main/cli/main.go)
+
+```
 p =  4E2E289D945A66BB13377A728884E867
 c =  E19CCB1FED8892CE
 aes_decrypt_key =  0c3b25d92b38ae443229dd59ad34b85d
@@ -31,3 +36,5 @@ aes_cmac_key =  b45775776cb224c75bcde7ca3704e933
 
 decrypted card data : uid 04996c6a926980 , ctr 070000
 cmac validates ok
+
+```
