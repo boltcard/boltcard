@@ -108,8 +108,8 @@ func main() {
 	}
 
 	uid := dec_p[1:8]
-	
-  ctr := make([]byte, 3)
+
+	ctr := make([]byte, 3)
 	ctr[0] = dec_p[10]
 	ctr[1] = dec_p[9]
 	ctr[2] = dec_p[8]
