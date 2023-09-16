@@ -1,13 +1,13 @@
 package main
 
 import (
+	"bytes"
+	"crypto/aes"
 	"encoding/hex"
 	"fmt"
+	"github.com/aead/cmac"
 	"github.com/boltcard/boltcard/crypto"
 	"os"
-  "bytes"
-  "crypto/aes"
-  "github.com/aead/cmac"
 )
 
 // inspired by parse_request() in lnurlw_request.go
@@ -28,7 +28,7 @@ func aes_cmac(key_sdm_file_read_mac []byte, sv2 []byte, ba_c []byte) (bool, erro
 
 	c3, err := aes.NewCipher(ks)
 	if err != nil {
-  	return false, err
+		return false, err
 	}
 
 	cm, err := cmac.Sum([]byte{}, c3, 16)
@@ -78,7 +78,7 @@ func check_cmac(uid []byte, ctr []byte, k2_cmac_key []byte, cmac []byte) (bool, 
 	sv2[14] = ctr[1]
 	sv2[15] = ctr[0]
 
-  fmt.Println("sv2 = ", sv2)
+	fmt.Println("sv2 = ", sv2)
 
 	cmac_verified, err := aes_cmac(k2_cmac_key, sv2, cmac)
 
