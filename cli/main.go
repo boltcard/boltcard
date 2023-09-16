@@ -5,9 +5,58 @@ import (
 	"fmt"
 	"github.com/boltcard/boltcard/crypto"
 	"os"
+  "bytes"
+  "crypto/aes"
+  "github.com/aead/cmac"
 )
 
 // inspired by parse_request() in lnurlw_request.go
+
+func aes_cmac(key_sdm_file_read_mac []byte, sv2 []byte, ba_c []byte) (bool, error) {
+
+	c2, err := aes.NewCipher(key_sdm_file_read_mac)
+	if err != nil {
+		return false, err
+	}
+
+	ks, err := cmac.Sum(sv2, c2, 16)
+	if err != nil {
+		return false, err
+	}
+
+	fmt.Println("ks = ", ks)
+
+	c3, err := aes.NewCipher(ks)
+	if err != nil {
+  	return false, err
+	}
+
+	cm, err := cmac.Sum([]byte{}, c3, 16)
+	if err != nil {
+		return false, err
+	}
+
+	fmt.Println("cm = ", cm)
+
+	ct := make([]byte, 8)
+	ct[0] = cm[1]
+	ct[1] = cm[3]
+	ct[2] = cm[5]
+	ct[3] = cm[7]
+	ct[4] = cm[9]
+	ct[5] = cm[11]
+	ct[6] = cm[13]
+	ct[7] = cm[15]
+
+	fmt.Println("ct = ", ct)
+
+	res_cmac := bytes.Compare(ct, ba_c)
+	if res_cmac != 0 {
+		return false, nil
+	}
+
+	return true, nil
+}
 
 func check_cmac(uid []byte, ctr []byte, k2_cmac_key []byte, cmac []byte) (bool, error) {
 
@@ -29,7 +78,9 @@ func check_cmac(uid []byte, ctr []byte, k2_cmac_key []byte, cmac []byte) (bool, 
 	sv2[14] = ctr[1]
 	sv2[15] = ctr[0]
 
-	cmac_verified, err := crypto.Aes_cmac(k2_cmac_key, sv2, cmac)
+  fmt.Println("sv2 = ", sv2)
+
+	cmac_verified, err := aes_cmac(k2_cmac_key, sv2, cmac)
 
 	if err != nil {
 		return false, err
