@@ -44,10 +44,10 @@ lnurlw://card.yourdomain.com/ln
 - select `Add PICCDATA` and `Enable SUN Message`
 - adjust the `URI Data` to
 ```
-lnurlw://card.yourdomain.com/ln?p=00000000000000000000000000000000&c=0000000000000000
+lnurlw://card.adomain.com/ln?p=00000000000000000000000000000000&c=0000000000000000
 ```
-- click after `p=` and note the p_position (41 in this case)
-- click after `c=` and note the c_position (76 in this case)
+- click after `p=` and note the p_position (38 in this case)
+- click after `c=` and note the c_position (73 in this case)
 - select `Write To Tag`
 
 ![NDEF message written successfully](images/nfwc.webp)
