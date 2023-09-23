@@ -46,7 +46,9 @@ lnurlw://card.yourdomain.com/ln
 ```
 lnurlw://card.yourdomain.com/ln?p=00000000000000000000000000000000&c=0000000000000000
 ```
+
 - click after `p=` and note the p_position (41 in this case)
+![find the p_position](images/posn-p.webp)
 - click after `c=` and note the c_position (76 in this case)
 - select `Write To Tag`
 
