@@ -101,7 +101,7 @@ lnurlw://card.yourdomain.com/ln?p=00000000000000000000000000000000&c=00000000000
 
 - set up the values in the order shown
 
-![file and SDM options with field entry order](images/fs-add.webp)
+![file and SDM options with field entry order](images/fs-add-2.webp)
 
 - select `Change File Settings`
 
