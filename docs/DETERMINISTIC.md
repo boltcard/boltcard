@@ -34,7 +34,18 @@ Under this proposed solution:
 * The `Issuing Service` can reset any Bolt Card using only the `Issuer Key`.
 * The `LNUrl Withdraw Service` might still need to brute-force encryption keys if there are multiple batches of Bolt Cards and no information in the lnurlw specifies to which batch a card belongs. However, this would require brute-forcing only one encryption key per batch, rather than one per card.
 
-Note: Since both the `Encryption Key` (`K1`) and the `Issuer Key` (`K0`) are shared across a batch of cards, it's advisable to confirm that the card originates from NXP using `Read_Sig` before altering the keys.
+## Security consideration
+
+Since `K0` and `K1` are shared among multiple Bolt Cards, the security of this scheme is based on the following assumptions:
+
+* `K0` and `K1` cannot be extracted from a legitimate NTag424.
+* Bolt Card setup occurs in a trusted environment.
+
+While NXP gives assurance keys can't be extracted, a non genuine NTag424 could potentially expose these keys.
+
+Furthermore, because Bolt Card setup uses the well-known initial application keys `00000000000000000000000000000000`, communication between the PCD and the PICC could be intercepted. If the Bolt Card setup doesn't occurs in a trusted environment, `K0` and `K1` could be exposed during the calls to `ChangeKey`.
+
+Note that verifying the signature returned by `Read_Sig` can only prove NXP issued a card with a specific `UID`. It cannot prove that the current communication channel is established with an authentic NTag424. This is because the signature returned by `Read_Sig` covers only the UID and can therefore be replayed by a non-genuine NTag424.
 
 ## Test vectors
 
