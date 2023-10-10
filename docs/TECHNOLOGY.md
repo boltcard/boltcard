@@ -4,7 +4,7 @@
 | --- | --- |
 | [System](SYSTEM.md) | Bolt card system overview |
 | [Specification](SPEC.md) | Bolt card specifications |
-| [Deterministic Keys (DRAFT FOR COMMENT)](DETERMINISTIC.md) | Consideration about Key generation on Bolt card |
+| [Deterministic Keys (DRAFT FOR COMMENT)](DETERMINISTIC.md) | Consideration about key generation |
 | [Privacy](CARD_PRIVACY.md) | Bolt card privacy |
 | [NXP 424 Datasheet](NT4H2421Gx.pdf) | NXP NTAG424DNA datasheet |
 | [NXP 424 Application Note](NT4H2421Gx.pdf) | NXP NTAG424DNA features and hints |
