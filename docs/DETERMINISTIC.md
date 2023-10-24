@@ -15,35 +15,47 @@ The primary drawback of this method is its lack of scalability. If many cards ha
 
 In this document, we propose a solution to this issue.
 
-## Key generation
+## Keys generation
 
-Assuming the `LNUrl Withdraw Service` generates a random key named (the `IssuerKey`) and has a `batch` of Bolt Cards to configure, it will set the following parameters:
+First, the `LNUrl Withdraw Service` generates a `IssuerKey` that it will use to generate the keys for every NTag424.
 
-* `K0 = PRF(IssuerKey, '2d003f76' || batchId || UID)`
-* `K1 = PRF(IssuerKey, '2d003f77' || batchId)`
-* `K2 = PRF(IssuerKey, '2d003f78' || batchId || UID)`
-* `K3 = PRF(IssuerKey, '2d003f79' || batchId || UID)`
-* `K4 = PRF(IssuerKey, '2d003f7a' || batchId || UID)`
+Then configure a Boltcard the following way:
 
-`batchId`: 4 bytes identifying the batch of card. (Can be set to `00000000` if uneeded)
+* `CardKey = GetRandomBytes(16)`
+* `K0 = PRF(CardKey, '2d003f76' || UID)`
+* `K1 = PRF(IssuerKey, '2d003f77')`
+* `K2 = PRF(CardKey, '2d003f78' || UID)`
+* `K3 = PRF(CardKey, '2d003f79' || UID)`
+* `K4 = PRF(CardKey, '2d003f7a' || UID)`
 
-The Pseudo Random Function `PRF(key, message)` applied during the key generation is the CMAC algorithm described in NIST Special Publication 800-38B.
+* `UID`: This is the 7-byte ID of the card. You can retrieve it from the NTag424 using the `GetCardUID` function after identification with K1, or by decrypting the `p=` parameter, also known as `PICCData`.
 
-## How the to implement a Reset feature
+The Pseudo Random Function `PRF(key, message)` applied during the key generation is the CMAC algorithm described in NIST Special Publication 800-38B. [See implementation notes](#notes)
+
+## How to setup a new boltcard
+
+1. Generate a random `CardKey` of 16 bytes.
+2. `ReadData` or `ISOReaDBinary` on the boltcard, to make sure the card is blank.
+3. Execute `AuthenticateEV2First` with `00000000000000000000000000000000`
+4. Fetch the `UID` with `GetCardUID`.
+2. Calculate `K0`, `K1`, `K2`, `K3`, `K4`.
+4. [Setup the boltcard](./CARD_MANUAL.md).
+
+## How to implement a Reset feature
 
 If a `LNUrl Withdraw Service` offers a factory reset feature for a user's bolt card, here is the recommended procedure:
 
 1. Read the NDEF lnurlw URL, extract `p=` and `c=`.
-2. For each existing `batchId`:
-    1. Derive `K1`, decrypts `p=` to get the `PICCData`.
-    2. If `PICCData[0] != 0xc7`, go to the next `batchId`.
-    3. Take `UID=PICCData[1..8]`, derive `K2`
-    4. Calculate the SUN MAC with `K2`, if different from `c=`, go to next `batchId`
-3. From the `UID`, the `IssuerKey` and the `batchId` with correct SUN MAC, recover `K0`, `K3`, and `K4`.
-5. Execute `AuthenticateEV2First` with `K0`
-6. Erase the NDEF data file using `WriteData` or `ISOUpdateBinary`
-7. Restore the NDEF file settings to default values with `ChangeFileSettings`.
-8. Use `ChangeKey` with the recovered application keys to reset `K4` through `K0` to `00000000000000000000000000000000`.
+2. Derive `Encryption Key (K1)`, decrypts `p=` to get the `PICCData`.
+3. Check `PICCData[0] == 0xc7`. 
+4. Calculate `ID=PRF(IssuerKey, '2d003f7b' || UID)` with the `UID` from the `PICCData`.
+5. Fetch `CardKey` from database with `ID`.
+6. Derive `K0`, `K2`, `K3`, `K4` with `CardKey` and the `UID`.
+7. Verify that the SUN MAC in `c=` matches the one calculated using `Authentication Key (K2)`.
+8. Execute `AuthenticateEV2First` with `K0`
+9. Erase the NDEF data file using `WriteData` or `ISOUpdateBinary`
+10. Restore the NDEF file settings to default values with `ChangeFileSettings`.
+11. Use `ChangeKey` with the recovered application keys to reset `K4` through `K0` to `00000000000000000000000000000000`.
 
 Rational: Attempting to call `AuthenticateEV2First` without validating the `p=` and `c=` parameters could render the NTag inoperable after a few attempts.
 
@@ -52,20 +64,26 @@ Rational: Attempting to call `AuthenticateEV2First` without validating the `p=` 
 If a `LNUrl Withdraw Service` needs to verify a payment request, follow these steps:
 
 1. Read the NDEF lnurlw URL, extract `p=` and `c=`.
-2. For each existing `batchId`:
-    1. Derive `K1`, decrypts `p=` to get the `PICCData`.
-    2. If `PICCData[0] != 0xc7`, go to the next `batchId`.
-    3. Take `UID=PICCData[1..8]`, derive `K2`
-    4. Calculate the SUN MAC with `K2`, if different from `c=`, go to next `batchId`
-3. If no correct SUN MAC has been found, returns an error.
-3. Confirm that the last-seen counter for `ID=PRF(IssuerKey, '2d003f7b' || batchId || UID)[0..7]` is lower than what is stored in `counter=PICCData[8..11]`.
-4. Update the last-seen counter.
+2. Derive `Encryption Key (K1)`, decrypts `p=` to get the `PICCData`.
+3. Check `PICCData[0] == 0xc7`. 
+4. Calculate `ID=PRF(IssuerKey, '2d003f7b' || UID)` with the `UID` from the `PICCData`.
+5. Fetch `CardKey` from database with `ID`.
+6. Derive `Authentication Key (K2)` with `CardKey` and the `UID`.
+7. Verify that the SUN MAC in `c=` matches the one calculated using `Authentication Key (K2)`.
+8. Confirm that the last-seen counter for `ID` is lower than what is stored in `counter=PICCData[8..11]`. (Little Endian)
+9. Update the last-seen counter.
 
-The specific method for calculating `ID` is not crucial; the recommendation is to avoid using `UID` directly. This approach offers both privacy and security benefits.
+Rationale: The `ID` is calculated to prevent the exposure of the `UID` in the `LNUrl Withdraw Service` database. This approach provides both privacy and security. Specifically, because the `UID` is used to derive keys, it is preferable not to store it outside the NTag.
 
-Mainly, since the `UID` is used to derive keys, it is better to not store it outside the NTag.
+## Multiple IssuerKeys
+
+A single `LNUrl Withdraw Service` can own multiple `IssuerKeys`. In such cases, it will need to attempt them all to decrypt `p=`, and pick the first one which satisfies `PICCData[0] == 0xc7` and verifies the `c=` checksum.
+
+Using multiple `IssuerKeys`, can decrease the impact of a compromised `Encryption Key (K1)` at the cost of performance.
 
 ## Security consideration
+
+### K1 security
 
 Since `K1` is shared among multiple Bolt Cards, the security of this scheme is based on the following assumptions:
 
@@ -80,22 +98,104 @@ However, if `K1` is compromised, the attacker still cannot produce a valid check
 
 Note that verifying the signature returned by `Read_Sig` can only prove NXP issued a card with a specific `UID`. It cannot prove that the current communication channel is established with an authentic NTag424. This is because the signature returned by `Read_Sig` covers only the `UID` and can therefore be replayed by a non-genuine NTag424.
 
+### Issuer database security
+
+If the issuer's database is compromised, revealing both the IssuerKey and CardKeys, it would still be infeasible for an attacker to derive `K2` and thus to forge signatures for an arbitrary card.
+
+This is because the database only stores `ID=PRF(IssuerKey, '2d003f7b' || UID)` and not the `UID` itself.
+
+## Implementation notes {#notes}
+
+Here is a C# implementation of the CMAC algorithm described in NIST Special Publication 800-38B.
+
+```csharp
+public byte[] CMac(byte[] data)
+{
+    var key = _bytes;
+    // SubKey generation
+    // step 1, AES-128 with key K is applied to an all-zero input block.
+    byte[] L = AesEncrypt(key, new byte[16], new byte[16]);
+
+    // step 2, K1 is derived through the following operation:
+    byte[]
+        FirstSubkey =
+            RotateLeft(L); //If the most significant bit of L is equal to 0, K1 is the left-shift of L by 1 bit.
+    if ((L[0] & 0x80) == 0x80)
+        FirstSubkey[15] ^=
+            0x87; // Otherwise, K1 is the exclusive-OR of const_Rb and the left-shift of L by 1 bit.
+
+    // step 3, K2 is derived through the following operation:
+    byte[]
+        SecondSubkey =
+            RotateLeft(FirstSubkey); // If the most significant bit of K1 is equal to 0, K2 is the left-shift of K1 by 1 bit.
+    if ((FirstSubkey[0] & 0x80) == 0x80)
+        SecondSubkey[15] ^=
+            0x87; // Otherwise, K2 is the exclusive-OR of const_Rb and the left-shift of K1 by 1 bit.
+
+    // MAC computing
+    if (((data.Length != 0) && (data.Length % 16 == 0)) == true)
+    {
+        // If the size of the input message block is equal to a positive multiple of the block size (namely, 128 bits),
+        // the last block shall be exclusive-OR'ed with K1 before processing
+        for (int j = 0; j < FirstSubkey.Length; j++)
+            data[data.Length - 16 + j] ^= FirstSubkey[j];
+    }
+    else
+    {
+        // Otherwise, the last block shall be padded with 10^i
+        byte[] padding = new byte[16 - data.Length % 16];
+        padding[0] = 0x80;
+
+        data = data.Concat(padding.AsEnumerable()).ToArray();
+
+        // and exclusive-OR'ed with K2
+        for (int j = 0; j < SecondSubkey.Length; j++)
+            data[data.Length - 16 + j] ^= SecondSubkey[j];
+    }
+
+    // The result of the previous process will be the input of the last encryption.
+    byte[] encResult = AesEncrypt(key, new byte[16], data);
+
+    byte[] HashValue = new byte[16];
+    Array.Copy(encResult, encResult.Length - HashValue.Length, HashValue, 0, HashValue.Length);
+
+    return HashValue;
+}
+static byte[] RotateLeft(byte[] b)
+{
+    byte[] r = new byte[b.Length];
+    byte carry = 0;
+
+    for (int i = b.Length - 1; i >= 0; i--)
+    {
+        ushort u = (ushort)(b[i] << 1);
+        r[i] = (byte)((u & 0xff) + carry);
+        carry = (byte)((u & 0xff00) >> 8);
+    }
+
+    return r;
+}
+```
+
+## Implementation
+
+* [BTCPayServer.BoltCardTools](https://github.com/btcpayserver/BTCPayServer.BoltCardTools), a Boltcard/NTag424 library in C#.
+
 ## Test vectors
 
 Input:
 ```
 UID: 04a39493cc8680
-Batch: 01000000
 Issuer Key: 00000000000000000000000000000001
+Card Key: 00000000000000000000000000000002
 ```
 
 Expected:
-
 ```
-K0: 60ef62b99ed8dc351ef7382b7d9e60f0
-K1: aa104a0bef8f751add9f06c5f000837a
-K2: 2ed57c172cf9b2ef8d8bfa6c9175d117
-K3: b943783b3265f0c9091f716eab470b06
-K4: 9fdd4ad2e7f2c0030eb84e695b257434
-ID: 3cd713f36fc177
+K0: 21940feffa2437910d8eb62b3b0a0648
+K1: 55da174c9608993dc27bb3f30a4a7314
+K2: 2934c4ab339979142dfd50ae0ca55dc2
+K3: b696f18e5a79e5a0defb25c38109b8e3
+K4: c9d493b9d3e62ce963586aafcd7c6cfe
+ID: e07ce1279d980ecb892a81924b67bf18
 ```
