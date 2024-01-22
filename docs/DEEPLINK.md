@@ -95,3 +95,19 @@ To avoid this issue the `Boltcard Service`, if using [Deterministic key generati
 This can be done easily by the `Boltcard Service` by adding a parameter in the `keys-request-url` which specifies that the version need to be updated.
 
 When the `Boltcard NFC Programmer` queries the URL with the UID of the card, the `Boltcard Service` will detect this parameter, and update the version.
+
+## Test vectors
+
+Here is an example of two links for respectively program the Boltcard and Reset it.
+
+```html
+<p>
+    <a id="SetupBoltcard" href="boltcard://program?url=https%3A%2F%2Flocalhost%3A14142%2Fapi%2Fv1%2Fpull-payments%2FfUDXsnySxvb5LYZ1bSLiWzLjVuT%2Fboltcards%3FonExisting%3DUpdateVersion" target="_blank">
+        Setup Boltcard
+    </a>
+    <span>&nbsp;|&nbsp;</span>
+    <a id="ResetBoltcard" href="boltcard://reset?url=https%3A%2F%2Flocalhost%3A14142%2Fapi%2Fv1%2Fpull-payments%2FfUDXsnySxvb5LYZ1bSLiWzLjVuT%2Fboltcards%3FonExisting%3DKeepVersion" target="_blank">
+        Reset Boltcard
+    </a>
+</p>
+```
