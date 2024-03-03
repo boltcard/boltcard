@@ -1,6 +1,6 @@
 ## Abstract
 
-Boltcard NFC Programmer App is a native app on iOS and Android to flash or reset NTag424 into a Boltcard.
+Boltcard NFC Programmer App is a native app on iOS and Android able to program or reset NTag424 into a Boltcard, the typical steps in the setup a Boltcard are:
 
 1. The `Boltcard Service` generates the keys, and format them into a QR Code
 2. The user opens the Boltcard NFC Programmer, go to `Create Bolt Card`, scans the QR code
@@ -8,14 +8,14 @@ Boltcard NFC Programmer App is a native app on iOS and Android to flash or reset
 
 The QR code contains all the keys necessary for the app to create the Boltcard.
 
-Here are the shortcomings we aim to address in this specification:
+Here are the shortcomings of this process that we aim to address in this specification:
 
-1. If the QR code is on the mobile device itself, it isn't possible to scan it
-2. It isn't possible to generate a pair of keys specific for the NTag424 being setup (the [deterministic key generation](./DETERMINISTIC.md) needs the UID before generating the keys)
+1. If the QR code get displayed on the mobile device itself, it is difficult to scan it
+2. The `Boltcard Service`, not knowing the UID when the keys are requested, isn't able to assign a specific pair of keys for the NTag424 being setup (for example, the [deterministic key generation](./DETERMINISTIC.md) needs the UID before generating the keys)
 
 ## Boltcard deeplinks
 
-The solution is for the `Boltcard Service` to generate deep links with the following format: `Boltcard://[program|reset]?url=[keys-request-url]`.
+The solution is for the `Boltcard Service` to generate deep links with the following format: `boltcard://[program|reset]?url=[keys-request-url]`.
 
 When clicked, `Boltcard NFC Programmer` would open and either allow the user to program their NTag424 or reset it after asking for the NTags keys to the `keys-request-url`.
 
@@ -62,10 +62,10 @@ The response will be similar to the format of the QR code:
 If `program` is specified in the Boltcard link, the `Boltcard NFC Programmer` must:
 
 1. Check if the lnurlw `NDEF` can be read.
-    * If the record can be read, then the card isn't reset, an error should be displayed to the user to first reset the Boltcard with the previous `Boltcard Service`.
+    * If the record can be read, then the card isn't blank, an error should be displayed to the user to first reset the Boltcard.
     * If the record can't be read, assume `K0` is `00000000000000000000000000000000` authenticate and call `GetUID` on the card again. (Since `GetUID` is called after authentication, the real `UID` will be returned even if `Random UID` has been activated)
 2. Send a request to the `keys-request-url` using the UID as explained above to get the NTag424 app keys
-3. Program the Boltcard
+3. Program the Boltcard with the app keys
 
 ## The Reset action
 
@@ -74,7 +74,7 @@ If `reset` is specified in the Boltcard link, the `Boltcard NFC Programmer` must
     * If the record can't be read, then the card is already reset, show an error message to the user.
     * If the record can be read, continue to step 2.
 2. Send a request to the `keys-request-url` using the lnurlw as explained above to get the NTag424 app keys
-3. Reset the Boltcard to factory state
+3. Reset the Boltcard to factory state with the app keys
 
 ## Handling setup/reset cycles for Boltcard Services
 
