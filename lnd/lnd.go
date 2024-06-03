@@ -81,6 +81,10 @@ func Add_invoice(amount_sat int64, metadata string) (payment_request string, r_h
 	if err != nil {
 		return "", nil, err
 	}
+	ln_invoice_expiry, err := strconv.ParseInt(db.Get_setting("LN_INVOICE_EXPIRY_SEC"), 10, 64)
+	if err != nil {
+		return "", nil, err
+	}
 
 	dh := sha256.Sum256([]byte(metadata))
 
@@ -98,6 +102,7 @@ func Add_invoice(amount_sat int64, metadata string) (payment_request string, r_h
 	result, err := l_client.AddInvoice(ctx, &lnrpc.Invoice{
 		Value:           amount_sat,
 		DescriptionHash: dh[:],
+		Expiry:          ln_invoice_expiry,
 	})
 
 	if err != nil {
@@ -120,6 +125,11 @@ func Monitor_invoice_state(r_hash []byte) {
 		log.Warn(err)
 		return
 	}
+	ln_invoice_expiry, err := strconv.Atoi(db.Get_setting("LN_INVOICE_EXPIRY_SEC"))
+	if err != nil {
+		log.Warn(err)
+		return
+	}
 
 	connection := getGrpcConn(
 		db.Get_setting("LN_HOST"),
@@ -129,7 +139,7 @@ func Monitor_invoice_state(r_hash []byte) {
 
 	i_client := invoicesrpc.NewInvoicesClient(connection)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(ln_invoice_expiry) * time.Second)
 	defer cancel()
 
 	stream, err := i_client.SubscribeSingleInvoice(ctx, &invoicesrpc.SubscribeSingleInvoiceRequest{
@@ -228,10 +238,11 @@ func PayInvoice(card_payment_id int, invoice string) {
 
 	bolt11, _ := decodepay.Decodepay(invoice)
 	invoice_msats := bolt11.MSatoshi
+	invoice_expiry := bolt11.Expiry
 
 	fee_limit_product := int64((fee_limit_percent / 100) * (float64(invoice_msats) / 1000))
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(invoice_expiry) * time.Second)
 	defer cancel()
 
 	stream, err := r_client.SendPaymentV2(ctx, &routerrpc.SendPaymentRequest{

@@ -31,3 +31,4 @@ INSERT INTO settings (name, value) VALUES ('LNDHUB_URL', '');
 INSERT INTO settings (name, value) VALUES ('FUNCTION_INTERNAL_API', '');
 INSERT INTO settings (name, value) VALUES ('SENDGRID_API_KEY', '');
 INSERT INTO settings (name, value) VALUES ('SENDGRID_EMAIL_SENDER', '');
+INSERT INTO settings (name, value) VALUES ('LN_INVOICE_EXPIRY_SEC', '3600');

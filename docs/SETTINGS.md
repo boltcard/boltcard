@@ -34,3 +34,4 @@ Here are the descriptions of values available to use in the `settings` table:
 | FUNCTION_INTERNAL_API | DISABLE | system level switch for activating the internal API |
 | SENDGRID_API_KEY      | | User API Key from SendGrid.com             |
 | SENDGRID_EMAIL_SENDER | | Single Sender email address verified by SendGrid |
+| LN_INVOICE_EXPIRY_SEC | 3600 | LN invoice's expiry time in seconds |
