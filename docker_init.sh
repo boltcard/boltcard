@@ -32,3 +32,4 @@ sed -i "s/[(]'FEE_LIMIT_PERCENT'[^)]*[)]/(\'FEE_LIMIT_PERCENT\', \'0.5\')/" sql/
 sed -i "s/[(]'FUNCTION_LNURLW'[^)]*[)]/(\'FUNCTION_LNURLW\', \'ENABLE\')/" sql/settings.sql
 sed -i "s/[(]'FUNCTION_LNURLP'[^)]*[)]/(\'FUNCTION_LNURLP\', \'DISABLE\')/" sql/settings.sql
 sed -i "s/[(]'FUNCTION_EMAIL'[^)]*[)]/(\'FUNCTION_EMAIL\', \'DISABLE\')/" sql/settings.sql
+sed -i "s/[(]'LN_INVOICE_EXPIRY_SEC'[^)]*[)]/(\'LN_INVOICE_EXPIRY_SEC\', \'3600\')/" sql/settings.sql
