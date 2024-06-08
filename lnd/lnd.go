@@ -139,7 +139,7 @@ func Monitor_invoice_state(r_hash []byte) {
 
 	i_client := invoicesrpc.NewInvoicesClient(connection)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(ln_invoice_expiry) * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(ln_invoice_expiry)*time.Second)
 	defer cancel()
 
 	stream, err := i_client.SubscribeSingleInvoice(ctx, &invoicesrpc.SubscribeSingleInvoiceRequest{
@@ -242,7 +242,7 @@ func PayInvoice(card_payment_id int, invoice string) {
 
 	fee_limit_product := int64((fee_limit_percent / 100) * (float64(invoice_msats) / 1000))
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(invoice_expiry) * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(invoice_expiry)*time.Second)
 	defer cancel()
 
 	stream, err := r_client.SendPaymentV2(ctx, &routerrpc.SendPaymentRequest{
