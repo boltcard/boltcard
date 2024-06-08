@@ -56,13 +56,13 @@ func lndhub_payment(w http.ResponseWriter, p *db.Payment, bolt11 decodepay.Bolt1
 	card_name_parts := strings.Split(c.Card_name, ":")
 
 	if len(card_name_parts) != 2 {
-		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn("login:password not found")
 		resp_err.Write(w)
 		return
 	}
 
 	if len(card_name_parts[0]) != 20 || len(card_name_parts[1]) != 20 {
-		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn("login:password badly formed")
 		resp_err.Write(w)
 		return
 	}
@@ -72,7 +72,6 @@ func lndhub_payment(w http.ResponseWriter, p *db.Payment, bolt11 decodepay.Bolt1
 	lhAuthRequest.Password = card_name_parts[1]
 
 	authReq, err := json.Marshal(lhAuthRequest)
-	log.Info(string(authReq))
 
 	req_auth, err := http.NewRequest("POST", lndhub_url+"/auth", bytes.NewBuffer(authReq))
 	if err != nil {
@@ -100,6 +99,9 @@ func lndhub_payment(w http.ResponseWriter, p *db.Payment, bolt11 decodepay.Bolt1
 		resp_err.Write(w)
 		return
 	}
+
+	log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id,
+		"resp_auth_bytes": string(resp_auth_bytes)}).Info("issue 62")
 
 	var auth_keys LndhubAuthResponse
 
@@ -225,16 +227,14 @@ func Callback(w http.ResponseWriter, req *http.Request) {
 	url := req.URL.RequestURI()
 	log.WithFields(log.Fields{"url": url}).Debug("cb request")
 
-	// check k1 value
-	params_k1, ok := req.URL.Query()["k1"]
+	// get k1 value
+	param_k1 := req.URL.Query().Get("k1")
 
-	if !ok || len(params_k1[0]) < 1 {
+	if param_k1 == "" {
 		log.WithFields(log.Fields{"url": url}).Debug("k1 not found")
 		resp_err.Write(w)
 		return
 	}
-
-	param_k1 := params_k1[0]
 
 	p, err := db.Get_payment_k1(param_k1)
 	if err != nil {
@@ -263,14 +263,14 @@ func Callback(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	params_pr, ok := req.URL.Query()["pr"]
-	if !ok || len(params_pr[0]) < 1 {
+	// get the payment request
+	param_pr := req.URL.Query().Get("pr")
+	if param_pr == "" {
 		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn("pr field not found")
 		resp_err.Write(w)
 		return
 	}
 
-	param_pr := params_pr[0]
 	bolt11, _ := decodepay.Decodepay(param_pr)
 
 	// record the lightning invoice
@@ -282,6 +282,23 @@ func Callback(w http.ResponseWriter, req *http.Request) {
 	}
 
 	log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Debug("checking payment rules")
+
+	// get the pin if it has been passed in
+	param_pin := req.URL.Query().Get("pin")
+
+	c, err := db.Get_card_from_card_id(p.Card_id)
+	if err != nil {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn(err)
+		resp_err.Write(w)
+		return
+	}
+
+	// check the pin if needed
+	if c.Pin_enable == "Y" && int(bolt11.MSatoshi/1000) >= c.Pin_limit_sats && c.Pin_number != param_pin {
+		log.WithFields(log.Fields{"card_payment_id": p.Card_payment_id}).Warn("incorrect pin provided")
+		resp_err.Write(w)
+		return
+	}
 
 	// check if we are only sending funds to a defined test node
 	testnode := db.Get_setting("LN_TESTNODE")

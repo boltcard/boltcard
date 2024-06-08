@@ -28,6 +28,9 @@ CREATE TABLE cards (
 	one_time_code_expiry TIMESTAMPTZ DEFAULT NOW() + INTERVAL '1 DAY',
 	one_time_code_used CHAR(1) NOT NULL DEFAULT 'Y',
 	allow_negative_balance CHAR(1) NOT NULL DEFAULT 'N',
+	pin_enable CHAR(1) NOT NULL DEFAULT 'N',
+	pin_number CHAR(4) NOT NULL DEFAULT '0000',
+	pin_limit_sats INT NOT NULL DEFAULT 0,
 	wiped CHAR(1) NOT NULL DEFAULT 'N',
 	PRIMARY KEY(card_id)
 );

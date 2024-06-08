@@ -31,6 +31,9 @@ type Card struct {
 	Card_name                  string
 	Allow_negative_balance     string
 	Nostr_priv_key             string
+	Pin_enable                 string
+	Pin_number                 string
+	Pin_limit_sats             int
 }
 
 type Payment struct {
@@ -357,7 +360,8 @@ func Get_card_from_card_id(card_id int) (*Card, error) {
 		`last_counter_value, lnurlw_request_timeout_sec, ` +
 		`lnurlw_enable, tx_limit_sats, day_limit_sats, ` +
 		`email_enable, email_address, card_name, ` +
-		`allow_negative_balance FROM cards WHERE card_id=$1;`
+		`allow_negative_balance, pin_enable, pin_number, ` +
+		`pin_limit_sats FROM cards WHERE card_id=$1;`
 	row := db.QueryRow(sqlStatement, card_id)
 	err = row.Scan(
 		&c.Card_id,
@@ -371,7 +375,10 @@ func Get_card_from_card_id(card_id int) (*Card, error) {
 		&c.Email_enable,
 		&c.Email_address,
 		&c.Card_name,
-		&c.Allow_negative_balance)
+		&c.Allow_negative_balance,
+		&c.Pin_enable,
+		&c.Pin_number,
+		&c.Pin_limit_sats)
 	if err != nil {
 		return &c, err
 	}
@@ -392,7 +399,7 @@ func Get_card_from_card_name(card_name string) (*Card, error) {
 
 	sqlStatement := `SELECT card_id, k2_cmac_key, uid,` +
 		` last_counter_value, lnurlw_request_timeout_sec,` +
-		` lnurlw_enable, tx_limit_sats, day_limit_sats` +
+		` lnurlw_enable, tx_limit_sats, day_limit_sats, pin_enable, pin_limit_sats` +
 		` FROM cards WHERE card_name=$1 AND wiped = 'N';`
 	row := db.QueryRow(sqlStatement, card_name)
 	err = row.Scan(
@@ -403,7 +410,9 @@ func Get_card_from_card_name(card_name string) (*Card, error) {
 		&c.Lnurlw_request_timeout_sec,
 		&c.Lnurlw_enable,
 		&c.Tx_limit_sats,
-		&c.Day_limit_sats)
+		&c.Day_limit_sats,
+		&c.Pin_enable,
+		&c.Pin_limit_sats)
 	if err != nil {
 		return &c, err
 	}
@@ -893,6 +902,71 @@ func Insert_card(one_time_code string, k0_auth_key string, k2_cmac_key string, k
 	return nil
 }
 
+func Insert_card_with_pin(one_time_code string, k0_auth_key string, k2_cmac_key string, k3 string, k4 string,
+	tx_limit_sats int, day_limit_sats int, lnurlw_enable bool, card_name string, uid_privacy bool,
+	allow_neg_bal_ptr bool, pin_enable bool, pin_number string, pin_limit_sats int) error {
+
+	lnurlw_enable_yn := "N"
+	if lnurlw_enable {
+		lnurlw_enable_yn = "Y"
+	}
+
+	uid_privacy_yn := "N"
+	if uid_privacy {
+		uid_privacy_yn = "Y"
+	}
+
+	allow_neg_bal_yn := "N"
+	if allow_neg_bal_ptr {
+		allow_neg_bal_yn = "Y"
+	}
+
+	pin_enable_yn := "N"
+	if pin_enable {
+		pin_enable_yn = "Y"
+	}
+
+	db, err := open()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	// ensure any cards with the same card_name are wiped
+
+	sqlStatement := `UPDATE cards SET` +
+		` lnurlw_enable = 'N', lnurlp_enable = 'N', email_enable = 'N', wiped = 'Y'` +
+		` WHERE card_name = $1;`
+	res, err := db.Exec(sqlStatement, card_name)
+	if err != nil {
+		return err
+	}
+
+	// insert a new record into cards
+
+	sqlStatement = `INSERT INTO cards` +
+		` (one_time_code, k0_auth_key, k2_cmac_key, k3, k4, uid, last_counter_value,` +
+		` lnurlw_request_timeout_sec, tx_limit_sats, day_limit_sats, lnurlw_enable,` +
+		` one_time_code_used, card_name, uid_privacy, allow_negative_balance,` +
+		` pin_enable, pin_number, pin_limit_sats)` +
+		` VALUES ($1, $2, $3, $4, $5, '', 0, 60, $6, $7, $8, 'N', $9, $10, $11, $12, $13, $14);`
+	res, err = db.Exec(sqlStatement, one_time_code, k0_auth_key, k2_cmac_key, k3, k4,
+		tx_limit_sats, day_limit_sats, lnurlw_enable_yn, card_name, uid_privacy_yn,
+		allow_neg_bal_yn, pin_enable_yn, pin_number, pin_limit_sats)
+	if err != nil {
+		return err
+	}
+	count, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if count != 1 {
+		return errors.New("not one card record inserted")
+	}
+
+	return nil
+}
+
 func Wipe_card(card_name string) (*Card_wipe_info, error) {
 
 	card_wipe_info := Card_wipe_info{}
@@ -934,7 +1008,8 @@ func Wipe_card(card_name string) (*Card_wipe_info, error) {
 	return &card_wipe_info, nil
 }
 
-func Update_card(card_name string, lnurlw_enable bool, tx_limit_sats int, day_limit_sats int) error {
+func Update_card(card_name string, lnurlw_enable bool, tx_limit_sats int,
+	day_limit_sats int) error {
 
 	lnurlw_enable_yn := "N"
 	if lnurlw_enable {
@@ -953,6 +1028,94 @@ func Update_card(card_name string, lnurlw_enable bool, tx_limit_sats int, day_li
 		`WHERE card_name = $1 AND wiped = 'N';`
 
 	res, err := db.Exec(sqlStatement, card_name, lnurlw_enable_yn, tx_limit_sats, day_limit_sats)
+
+	if err != nil {
+		return err
+	}
+
+	count, err := res.RowsAffected()
+
+	if err != nil {
+		return err
+	}
+
+	if count != 1 {
+		return errors.New("not one card record updated")
+	}
+
+	return nil
+}
+
+func Update_card_with_pin(card_name string, lnurlw_enable bool, tx_limit_sats int, day_limit_sats int,
+	pin_enable bool, pin_number string, pin_limit_sats int) error {
+
+	lnurlw_enable_yn := "N"
+	if lnurlw_enable {
+		lnurlw_enable_yn = "Y"
+	}
+
+	pin_enable_yn := "N"
+	if pin_enable {
+		pin_enable_yn = "Y"
+	}
+
+	db, err := open()
+
+	if err != nil {
+		return err
+	}
+
+	defer db.Close()
+
+	sqlStatement := `UPDATE cards SET lnurlw_enable = $2, tx_limit_sats = $3, day_limit_sats = $4, ` +
+		`pin_enable = $5, pin_number = $6, pin_limit_sats = $7 WHERE card_name = $1 AND wiped = 'N';`
+
+	res, err := db.Exec(sqlStatement, card_name, lnurlw_enable_yn, tx_limit_sats, day_limit_sats,
+		pin_enable_yn, pin_number, pin_limit_sats)
+
+	if err != nil {
+		return err
+	}
+
+	count, err := res.RowsAffected()
+
+	if err != nil {
+		return err
+	}
+
+	if count != 1 {
+		return errors.New("not one card record updated")
+	}
+
+	return nil
+}
+
+func Update_card_with_part_pin(card_name string, lnurlw_enable bool, tx_limit_sats int, day_limit_sats int,
+	pin_enable bool, pin_limit_sats int) error {
+
+	lnurlw_enable_yn := "N"
+	if lnurlw_enable {
+		lnurlw_enable_yn = "Y"
+	}
+
+	pin_enable_yn := "N"
+	if pin_enable {
+		pin_enable_yn = "Y"
+	}
+
+	db, err := open()
+
+	if err != nil {
+		return err
+	}
+
+	defer db.Close()
+
+	sqlStatement := `UPDATE cards SET lnurlw_enable = $2, tx_limit_sats = $3, day_limit_sats = $4, ` +
+		`pin_enable = $5, pin_limit_sats = $6 WHERE card_name = $1 AND wiped = 'N';`
+
+	res, err := db.Exec(sqlStatement, card_name, lnurlw_enable_yn, tx_limit_sats, day_limit_sats,
+		pin_enable_yn, pin_limit_sats)
 
 	if err != nil {
 		return err
